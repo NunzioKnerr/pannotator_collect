@@ -3,7 +3,7 @@
 ## Description of the Workflow
 
 This workflow has been developed to allow easy creation of .kmz files
-from 360 panosphere images.
+from 360 panospheric images.
 
 These can be taken with a gopro Max camera or most consumer drones like
 those made by DJI.
@@ -29,8 +29,8 @@ annotating.
 
 ## Check & Install Dependent Packages
 
-In order for the for this workflow to function as expected there are a
-few dependent packages to install and configure.
+In order for this workflow to function as expected there are a few
+dependent packages to install and configure.
 
 ``` r
 dependentPackages <-
@@ -86,10 +86,10 @@ Note: Gopro now have custom firmware that allows you to set the
 filenames in the field see this GoPro Labs
 [link](https://gopro.github.io/labs/control/basename/).
 
-This code checks the file name length initially assuming that… if it is
-from the camera it is 12 characters long. If the files used have longer
-file names they will not be renamed. This ensures they are only renamed
-once.
+This code checks the file name length initially assuming that files
+names directly downloaded from the camera are 12 characters long. If the
+files used have longer file names they will not be renamed. This ensures
+they are only renamed once.
 
 ``` r
 library(tcltk)
@@ -129,7 +129,7 @@ for (i in 1:nrow(files_df)) {
     formattedCreateDate <- stringr::str_replace_all(formattedCreateDate, " ", "_")
     print(paste0("formattedCreateDate: ", formattedCreateDate))
     file_ext <- tolower(tools::file_ext(files_df[i, "System:FileName"]))
-    newFileName <- paste0(files_df[i, "System:Directory"],"/",formattedCreateDate,"_",tools::file_path_sans_ext(basename(files_df[i, "System:FileName"])),".",file_ext)
+    newFileName <- paste0(files_df[i, "System:Directory"], "/", formattedCreateDate,"_",tools::file_path_sans_ext(basename(files_df[i, "System:FileName"])), ".",file_ext)
     print(paste0("newFileName: ", newFileName))
     file.rename(from = origFullFileName, to = newFileName)
     print("File name changed")
@@ -146,12 +146,12 @@ for (i in 1:nrow(files_df)) {
 ## Function to calculate distances between image geo-locations.
 
 This code looks through all the files in a given folder and copies
-images a user-specified distance apart from each other into a new folder
-for use later on. It starts with the first file and looks for a file at
-least XX metres from that. Once it finds one it adds it to the list then
-uses it as the location to look for another file at least XX metres from
-it and so on until it gets to the end of the file list. This method is
-most suitable for linear transect sampling.
+images a user-specified distance apart into a new folder for use later
+on. It starts with the first file and looks for a file at least XX
+metres from that. Once it finds one it adds it to the list then uses it
+as the location to look for another file at least XX metres from it and
+so on until it gets to the end of the file list. This method is most
+suitable for linear transect sampling.
 
 ``` r
 library(geosphere)
@@ -301,10 +301,11 @@ metre intervals. Below is the image loaded into
 lines for the overlay.
 
 ![overlay image with camera
-background](overlay_files/example_overlay_one_water_tank.png)Note: There
-is a slight discrepancy with the line on the right side of the image.
-This is due to the camera not being exactly vertical when capturing the
-image.
+background](overlay_files/example_overlay_one_water_tank.png)
+
+Note: There is a slight discrepancy with the line on the right side of
+the image. This is due to the camera not being exactly vertical when
+capturing the image.
 
 The overlay was created using inkscape and the exported as a portable
 network graphics (.png) file with transparency. See the example below:
