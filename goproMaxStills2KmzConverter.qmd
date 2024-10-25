@@ -19,7 +19,7 @@ format:
     pdf-engine: lualatex
     toc: true
     toc-depth: 3
-    number-sections: false
+    number-sections: true
     colorlinks: true
     include-in-header:
       text: |
@@ -28,13 +28,9 @@ format:
     geometry:
       - top=30mm
       - left=30mm
-      - heightrounded
     mainfont: "Calibri"
-    fontsize: 10pt
+    fontsize: 12pt
     code-line-numbers: TRUE
-    tbl-cap-location: top
-    fig-align: center
-    fig-cap-location: top
 ---
 
 ## Description of the Workflow
@@ -63,7 +59,7 @@ The resulting .kmz file can then be used in the pannotator package for annotatin
 
 In order for this workflow to function as expected there are a few dependent packages to install and configure.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 dependentPackages <-
   c("tcltk",
@@ -113,7 +109,7 @@ Note: Gopro now have custom firmware that allows you to set the filenames in the
 
 This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 library(tcltk)
 library(exiftoolr)
@@ -171,7 +167,7 @@ for (i in 1:nrow(files_df)) {
 
 This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 library(geosphere)
 
@@ -262,7 +258,7 @@ findImagesEveryXmetres <-
 
 Now call the function above to calculate the distance between all the images and copy them to a new folder
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 if (!exists("directory")) {
   directory <-
@@ -318,7 +314,7 @@ The overlay was created using inkscape and the exported as a portable network gr
 
 The code below uses [imagemagick](https://imagemagick.org/index.php) to load the underlying base file and then overlays the .png and saves out the flattened file for use in the kml/kmz files in the following steps.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 library(magick)
 library(tools)
@@ -383,7 +379,7 @@ for (t in 1:length(files_lst)) {
 
 This code generates a [google earth](https://earth.google.com) kml file linking to the image files in the folder generated above. It uses [ExifTool](https://exiftool.org/) with a template "kml_hide_rollover.fmt" to create the kml file.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 if (!exists("directory")) {
   directory <-
@@ -432,7 +428,7 @@ sink()
 
 This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.
 
-```{r eval=FALSE, echo=TRUE, warning=FALSE}
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 library(zip)
 
