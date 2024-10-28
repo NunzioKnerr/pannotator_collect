@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nunzio Knerr">
+<meta name="author" content="Robert Godfree">
+<meta name="dcterms.date" content="2024-10-28">
+
+<title>gopro max stills 2 kmz converter</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body>
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description-of-the-workflow" id="toc-description-of-the-workflow" class="nav-link active" data-scroll-target="#description-of-the-workflow">Description of the Workflow</a></li>
+  <li><a href="#check-install-dependent-packages" id="toc-check-install-dependent-packages" class="nav-link" data-scroll-target="#check-install-dependent-packages">Check &amp; Install Dependent Packages</a></li>
+  <li><a href="#rename-files" id="toc-rename-files" class="nav-link" data-scroll-target="#rename-files">Rename Files</a></li>
+  <li><a href="#function-to-calculate-distances-between-image-geo-locations." id="toc-function-to-calculate-distances-between-image-geo-locations." class="nav-link" data-scroll-target="#function-to-calculate-distances-between-image-geo-locations.">Function to calculate distances between image geo-locations.</a></li>
+  <li><a href="#call-function-above" id="toc-call-function-above" class="nav-link" data-scroll-target="#call-function-above">Call Function Above</a></li>
+  <li><a href="#add-overlays-to-the-images" id="toc-add-overlays-to-the-images" class="nav-link" data-scroll-target="#add-overlays-to-the-images">Add Overlays to the Images</a></li>
+  <li><a href="#generate-kml" id="toc-generate-kml" class="nav-link" data-scroll-target="#generate-kml">Generate KML</a></li>
+  <li><a href="#convert-kml-images-into-a-kmz" id="toc-convert-kml-images-into-a-kmz" class="nav-link" data-scroll-target="#convert-kml-images-into-a-kmz">Convert kml &amp; images into a kmz</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="goproMaxStills2KmzConverter.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">gopro max stills 2 kmz converter</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nunzio Knerr </p>
+             <p>Robert Godfree </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 28, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="description-of-the-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="description-of-the-workflow">Description of the Workflow</h2>
+<p>This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images.</p>
+<p>These can be taken with a gopro Max camera or most consumer drones like those made by DJI.</p>
+<p>Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.</p>
+<p>Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.</p>
+<p>The workflow is as follows:</p>
+<ol type="1">
+<li><p>Rename the files</p></li>
+<li><p>Get subset of images a specified distance apart</p></li>
+<li><p>Add overlays to the images</p></li>
+<li><p>Create a google earth .kml file</p></li>
+<li><p>Convert the kml file and associated images into a single .kmz file</p></li>
+</ol>
+<p>The resulting .kmz file can then be used in the pannotator package for annotating.</p>
+</section>
+<section id="check-install-dependent-packages" class="level2">
+<h2 class="anchored" data-anchor-id="check-install-dependent-packages">Check &amp; Install Dependent Packages</h2>
+<p>In order for this workflow to function as expected there are a few dependent packages to install and configure.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dependentPackages <span class="ot">&lt;-</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">c</span>(<span class="st">"tcltk"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="st">"stringr"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="st">"tools"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5"></a>    <span class="st">"exiftoolr"</span>,</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    <span class="st">"geosphere"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="st">"stringr"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="st">"gpx"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="st">"magick"</span>,</span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="st">"fs"</span>,</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="st">"magrittr"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12"></a>    <span class="st">"plotKML"</span>,</span>
+<span id="cb1-13"><a href="#cb1-13"></a>    <span class="st">"zip"</span>,</span>
+<span id="cb1-14"><a href="#cb1-14"></a>    <span class="st">"usefun"</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>  )</span>
+<span id="cb1-16"><a href="#cb1-16"></a></span>
+<span id="cb1-17"><a href="#cb1-17"></a><span class="cf">for</span> (i <span class="cf">in</span> dependentPackages) {</span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Checking for: "</span>, i))</span>
+<span id="cb1-19"><a href="#cb1-19"></a>  </span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="co"># First check if you have the package installed</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>  check_for_package <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="at">package =</span> i)</span>
+<span id="cb1-22"><a href="#cb1-22"></a>  <span class="fu">print</span>(check_for_package)</span>
+<span id="cb1-23"><a href="#cb1-23"></a>  </span>
+<span id="cb1-24"><a href="#cb1-24"></a>  <span class="co"># If not run the following code to install it.</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a>  <span class="cf">if</span> (check_for_package <span class="sc">==</span> <span class="st">""</span>) {</span>
+<span id="cb1-26"><a href="#cb1-26"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(i, <span class="st">" package not found .....installing now"</span>))</span>
+<span id="cb1-27"><a href="#cb1-27"></a>    <span class="fu">install.packages</span>(i)</span>
+<span id="cb1-28"><a href="#cb1-28"></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-29"><a href="#cb1-29"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(i, <span class="st">" package is already installed"</span>))</span>
+<span id="cb1-30"><a href="#cb1-30"></a>  }</span>
+<span id="cb1-31"><a href="#cb1-31"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="rename-files" class="level2">
+<h2 class="anchored" data-anchor-id="rename-files">Rename Files</h2>
+<p>By default most consumer cameras like the gopro max &amp; DJI drones don’t allow the user to specify the file names they apply to images that they create.</p>
+<p>A typical file name follows the format GS__XXXX.JPG - where XXXX is a counter number of the images taken by the camera.</p>
+<p>To address this issue and make it easier to manage the files for processing, this code appends the date_time stamp to the beginning of the files in a given directory. It’s useful for organising files when doing field work, especially when using multiple cameras at the same time.</p>
+<p>The output format is: YYYYMMDD_HHMMSS_FileName.ext</p>
+<p>Note: Gopro now have custom firmware that allows you to set the file names in the field see this GoPro Labs <a href="https://gopro.github.io/labs/control/basename/">link</a>.</p>
+<p>This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(tcltk)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(exiftoolr)</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">library</span>(tools)</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co">#This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>directory <span class="ot">&lt;-</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>  tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">"gopro_images"</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#OR</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="co">#directory &lt;- "C:/FolderToUse/"</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="co">#file_extension &lt;- "\\.JPG$"</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    directory,</span>
+<span id="cb2-17"><a href="#cb2-17"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(<span class="st">"*"</span>, file_extension),</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>  )</span>
+<span id="cb2-21"><a href="#cb2-21"></a></span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>files_df <span class="ot">&lt;-</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb2-25"><a href="#cb2-25"></a></span>
+<span id="cb2-26"><a href="#cb2-26"></a><span class="co">#Loop through the files and check to change files names</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
+<span id="cb2-29"><a href="#cb2-29"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
+<span id="cb2-30"><a href="#cb2-30"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(files_df[i, <span class="st">"System:FileName"</span>]) <span class="sc">==</span> <span class="dv">12</span>) {</span>
+<span id="cb2-31"><a href="#cb2-31"></a>    <span class="fu">print</span>(<span class="st">"File appears to be 12 characters long"</span>)</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb2-33"><a href="#cb2-33"></a>    origFullFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"SourceFile"</span>])</span>
+<span id="cb2-34"><a href="#cb2-34"></a>    createDate <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"ExifIFD:DateTimeOriginal"</span>])</span>
+<span id="cb2-35"><a href="#cb2-35"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"CreateDate: "</span>, createDate))</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(createDate, <span class="st">":"</span>, <span class="st">""</span>)</span>
+<span id="cb2-37"><a href="#cb2-37"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(formattedCreateDate, <span class="st">" "</span>, <span class="st">"_"</span>)</span>
+<span id="cb2-38"><a href="#cb2-38"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"formattedCreateDate: "</span>, formattedCreateDate))</span>
+<span id="cb2-39"><a href="#cb2-39"></a>    file_ext <span class="ot">&lt;-</span> <span class="fu">tolower</span>(tools<span class="sc">::</span><span class="fu">file_ext</span>(files_df[i, <span class="st">"System:FileName"</span>]))</span>
+<span id="cb2-40"><a href="#cb2-40"></a>    newFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"System:Directory"</span>], <span class="st">"/"</span>, formattedCreateDate,<span class="st">"_"</span>,tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(<span class="fu">basename</span>(files_df[i, <span class="st">"System:FileName"</span>])), <span class="st">"."</span>,file_ext)</span>
+<span id="cb2-41"><a href="#cb2-41"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"newFileName: "</span>, newFileName))</span>
+<span id="cb2-42"><a href="#cb2-42"></a>    <span class="fu">file.rename</span>(<span class="at">from =</span> origFullFileName, <span class="at">to =</span> newFileName)</span>
+<span id="cb2-43"><a href="#cb2-43"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
+<span id="cb2-44"><a href="#cb2-44"></a>  } <span class="cf">else</span> {</span>
+<span id="cb2-45"><a href="#cb2-45"></a>    <span class="fu">print</span>(</span>
+<span id="cb2-46"><a href="#cb2-46"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
+<span id="cb2-47"><a href="#cb2-47"></a>    )</span>
+<span id="cb2-48"><a href="#cb2-48"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb2-49"><a href="#cb2-49"></a>  }</span>
+<span id="cb2-50"><a href="#cb2-50"></a>  </span>
+<span id="cb2-51"><a href="#cb2-51"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="function-to-calculate-distances-between-image-geo-locations." class="level2">
+<h2 class="anchored" data-anchor-id="function-to-calculate-distances-between-image-geo-locations.">Function to calculate distances between image geo-locations.</h2>
+<p>This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(geosphere)</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">20</span>)</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="fu">options</span>(<span class="at">digits.secs =</span> <span class="dv">20</span>)</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">9999</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#function which takes 2 arguments</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#1:gpx_locations - a dataframe containing 4 columns("SourceFile", "System:Directory", "Composite:GPSLongitude", "Composite:GPSLatitude")</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#2:distance in metres between each image to extract. (default=50m)</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>findImagesEveryXmetres <span class="ot">&lt;-</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>  <span class="cf">function</span>(my_gpx_locs, <span class="at">metresToNextImage =</span> <span class="dv">50</span>) {</span>
+<span id="cb3-12"><a href="#cb3-12"></a>    gpx_locs <span class="ot">&lt;-</span> my_gpx_locs</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    </span>
+<span id="cb3-14"><a href="#cb3-14"></a>    keeps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Composite:GPSLongitude"</span>, <span class="st">"Composite:GPSLatitude"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    points <span class="ot">&lt;-</span> gpx_locs[keeps]</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    </span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="co">#View(points)</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="co">#View(gpx_locs)</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>    </span>
+<span id="cb3-20"><a href="#cb3-20"></a>    <span class="co">#calculate the distance between any two points</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>    distance_m <span class="ot">&lt;-</span> geosphere<span class="sc">::</span><span class="fu">distm</span>(points , <span class="at">fun =</span> geosphere<span class="sc">::</span>distHaversine)</span>
+<span id="cb3-22"><a href="#cb3-22"></a>    <span class="fu">rownames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
+<span id="cb3-23"><a href="#cb3-23"></a>    <span class="fu">colnames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
+<span id="cb3-24"><a href="#cb3-24"></a>    </span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="co">#View(distance_m)</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a>    </span>
+<span id="cb3-27"><a href="#cb3-27"></a>    <span class="co">#find images a certain distance apart.</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a>    selected_files <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb3-29"><a href="#cb3-29"></a>    </span>
+<span id="cb3-30"><a href="#cb3-30"></a>    metres_between_images <span class="ot">&lt;-</span> metresToNextImage</span>
+<span id="cb3-31"><a href="#cb3-31"></a>    </span>
+<span id="cb3-32"><a href="#cb3-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
+<span id="cb3-33"><a href="#cb3-33"></a>      <span class="st">"Searching for images apart by: "</span>,</span>
+<span id="cb3-34"><a href="#cb3-34"></a>      metres_between_images,</span>
+<span id="cb3-35"><a href="#cb3-35"></a>      <span class="st">" metres"</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>    ))</span>
+<span id="cb3-37"><a href="#cb3-37"></a>    </span>
+<span id="cb3-38"><a href="#cb3-38"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(distance_m)) {</span>
+<span id="cb3-39"><a href="#cb3-39"></a>      <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb3-40"><a href="#cb3-40"></a>        <span class="co">#if it is the first frame add it as the current frame</span></span>
+<span id="cb3-41"><a href="#cb3-41"></a>        selected_files <span class="ot">&lt;-</span></span>
+<span id="cb3-42"><a href="#cb3-42"></a>          <span class="fu">append</span>(selected_files, <span class="fu">rownames</span>(distance_m)[i])</span>
+<span id="cb3-43"><a href="#cb3-43"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
+<span id="cb3-44"><a href="#cb3-44"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Frame 1: "</span>, current_frame))</span>
+<span id="cb3-45"><a href="#cb3-45"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
+<span id="cb3-46"><a href="#cb3-46"></a>          <span class="st">"looking for frame &gt;"</span>,</span>
+<span id="cb3-47"><a href="#cb3-47"></a>          metres_between_images ,</span>
+<span id="cb3-48"><a href="#cb3-48"></a>          <span class="st">" Metres from frame 1"</span></span>
+<span id="cb3-49"><a href="#cb3-49"></a>        ))</span>
+<span id="cb3-50"><a href="#cb3-50"></a>      }<span class="co">#if the current frame is greater than the specified metres</span></span>
+<span id="cb3-51"><a href="#cb3-51"></a>      <span class="cf">if</span> ((distance_m[i, current_frame] <span class="sc">&gt;</span> metres_between_images)) {</span>
+<span id="cb3-52"><a href="#cb3-52"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
+<span id="cb3-53"><a href="#cb3-53"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"current_frame: "</span>, current_frame))</span>
+<span id="cb3-54"><a href="#cb3-54"></a>        selected_files <span class="ot">&lt;-</span> <span class="fu">append</span>(selected_files, current_frame)</span>
+<span id="cb3-55"><a href="#cb3-55"></a>      }</span>
+<span id="cb3-56"><a href="#cb3-56"></a>      </span>
+<span id="cb3-57"><a href="#cb3-57"></a>    }</span>
+<span id="cb3-58"><a href="#cb3-58"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Files found:"</span>, selected_files))</span>
+<span id="cb3-59"><a href="#cb3-59"></a>    </span>
+<span id="cb3-60"><a href="#cb3-60"></a>    new_folder <span class="ot">&lt;-</span></span>
+<span id="cb3-61"><a href="#cb3-61"></a>      <span class="fu">paste0</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>], <span class="st">"_Frames_"</span>, metres_between_images, <span class="st">"m_apart"</span>)</span>
+<span id="cb3-62"><a href="#cb3-62"></a>    </span>
+<span id="cb3-63"><a href="#cb3-63"></a>    <span class="fu">dir.create</span>(new_folder)</span>
+<span id="cb3-64"><a href="#cb3-64"></a>    </span>
+<span id="cb3-65"><a href="#cb3-65"></a>    source_folder <span class="ot">&lt;-</span>  <span class="fu">dirname</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"SourceFile"</span>])</span>
+<span id="cb3-66"><a href="#cb3-66"></a>    </span>
+<span id="cb3-67"><a href="#cb3-67"></a>    <span class="fu">print</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>])</span>
+<span id="cb3-68"><a href="#cb3-68"></a>    </span>
+<span id="cb3-69"><a href="#cb3-69"></a>    <span class="cf">for</span> (q <span class="cf">in</span> selected_files) {</span>
+<span id="cb3-70"><a href="#cb3-70"></a>      file_to_copy <span class="ot">&lt;-</span> <span class="fu">paste0</span>(source_folder, <span class="st">"/"</span>, q)</span>
+<span id="cb3-71"><a href="#cb3-71"></a>      destination <span class="ot">&lt;-</span> <span class="fu">paste0</span>(new_folder,  <span class="st">"/"</span>, q)</span>
+<span id="cb3-72"><a href="#cb3-72"></a>      <span class="fu">file.copy</span>(</span>
+<span id="cb3-73"><a href="#cb3-73"></a>        file_to_copy,</span>
+<span id="cb3-74"><a href="#cb3-74"></a>        destination,</span>
+<span id="cb3-75"><a href="#cb3-75"></a>        <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-76"><a href="#cb3-76"></a>        <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-77"><a href="#cb3-77"></a>        <span class="at">copy.mode =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-78"><a href="#cb3-78"></a>        <span class="at">copy.date =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-79"><a href="#cb3-79"></a>      )</span>
+<span id="cb3-80"><a href="#cb3-80"></a>    }</span>
+<span id="cb3-81"><a href="#cb3-81"></a>    </span>
+<span id="cb3-82"><a href="#cb3-82"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="call-function-above" class="level2">
+<h2 class="anchored" data-anchor-id="call-function-above">Call Function Above</h2>
+<p>Now call the function above to calculate the distance between all the images and copy them to a new folder.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(tcltk)</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">library</span>(exiftoolr)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  directory <span class="ot">&lt;-</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7"></a>}</span>
+<span id="cb4-8"><a href="#cb4-8"></a></span>
+<span id="cb4-9"><a href="#cb4-9"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    directory,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
+<span id="cb4-15"><a href="#cb4-15"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-16"><a href="#cb4-16"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a>  )</span>
+<span id="cb4-18"><a href="#cb4-18"></a></span>
+<span id="cb4-19"><a href="#cb4-19"></a>image_files_df <span class="ot">&lt;-</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb4-21"><a href="#cb4-21"></a></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#View(image_files_df)</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a></span>
+<span id="cb4-24"><a href="#cb4-24"></a>gpx_locs <span class="ot">&lt;-</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a>  <span class="fu">as.data.frame</span>(image_files_df[, <span class="fu">c</span>(</span>
+<span id="cb4-26"><a href="#cb4-26"></a>    <span class="st">"SourceFile"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27"></a>    <span class="st">"System:Directory"</span>,</span>
+<span id="cb4-28"><a href="#cb4-28"></a>    <span class="st">"Composite:GPSLatitude"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29"></a>    <span class="st">"Composite:GPSLongitude"</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a>  )])</span>
+<span id="cb4-31"><a href="#cb4-31"></a></span>
+<span id="cb4-32"><a href="#cb4-32"></a><span class="co">#View(gpx_locs)</span></span>
+<span id="cb4-33"><a href="#cb4-33"></a></span>
+<span id="cb4-34"><a href="#cb4-34"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a></span>
+<span id="cb4-36"><a href="#cb4-36"></a><span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="add-overlays-to-the-images" class="level2">
+<h2 class="anchored" data-anchor-id="add-overlays-to-the-images">Add Overlays to the Images</h2>
+<p>This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 images as the focal length of the lens etc. will define how the overlay should look.</p>
+<p>In this example we used a gopro Max at 3.2m above the ground. The easiest way to determine how an overlay should look is to take some images with the camera at the specified height with the desired overlay marked on the ground so you have an easy template to base your overlay on.</p>
+<p>Here we wanted a circular marker at a 5 metre radius and we were lucky to find a round concrete water tank buried in the ground with the required radius. We marked the distance in metres from the centre of the plot directly under the camera using a pole with black marking tape at 1 metre intervals. Below is the image loaded into <a href="https://inkscape.org/">inkscape</a> so we could draw the required marker lines for the overlay.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="overlay_files/example_overlay_one_water_tank.png" class="img-fluid figure-img"></p>
+<figcaption>overlay image with camera background</figcaption>
+</figure>
+</div>
+<p>Note: There is a slight discrepancy with the line on the right side of the image. This is due to the camera not being exactly vertical when capturing the image.</p>
+<p>The overlay was created using inkscape and the exported as a portable network graphics (.png) file with transparency. See the example below:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="overlay_files/5m_overlay_wedges_straight6.png" class="img-fluid figure-img"></p>
+<figcaption>overlay image with transparency</figcaption>
+</figure>
+</div>
+<p>The code below uses <a href="https://imagemagick.org/index.php">imagemagick</a> to load the underlying base file and then overlays the .png and saves out the flattened file for use in the kml/kmz files in the following steps.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">library</span>(magick)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">library</span>(tools)</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
+<span id="cb5-5"><a href="#cb5-5"></a>  directory <span class="ot">&lt;-</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="co">#OR</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb5-13"><a href="#cb5-13"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">50</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a>}</span>
+<span id="cb5-15"><a href="#cb5-15"></a></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co"># if it doesn't exist then thorw up a dialog to select the overlay file to use</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"overlay_file"</span>)) {</span>
+<span id="cb5-18"><a href="#cb5-18"></a>  overlay_file <span class="ot">&lt;-</span>  tcltk<span class="sc">::</span><span class="fu">tk_choose.files</span>(<span class="at">default=</span> <span class="st">"./overlay_files/5m_overlay_wedges_straight6.png"</span>, <span class="at">caption =</span> <span class="st">"Select the overlay .png to use"</span>, <span class="at">multi=</span><span class="cn">FALSE</span>)</span>
+<span id="cb5-19"><a href="#cb5-19"></a>}</span>
+<span id="cb5-20"><a href="#cb5-20"></a></span>
+<span id="cb5-21"><a href="#cb5-21"></a>new_directory <span class="ot">&lt;-</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb5-23"><a href="#cb5-23"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb5-25"><a href="#cb5-25"></a>         <span class="st">"m_apart"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26"></a></span>
+<span id="cb5-27"><a href="#cb5-27"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
+<span id="cb5-28"><a href="#cb5-28"></a></span>
+<span id="cb5-29"><a href="#cb5-29"></a>files_lst <span class="ot">&lt;-</span></span>
+<span id="cb5-30"><a href="#cb5-30"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb5-31"><a href="#cb5-31"></a>    new_directory,</span>
+<span id="cb5-32"><a href="#cb5-32"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
+<span id="cb5-33"><a href="#cb5-33"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-34"><a href="#cb5-34"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-35"><a href="#cb5-35"></a>    <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-36"><a href="#cb5-36"></a>    <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-37"><a href="#cb5-37"></a>  )</span>
+<span id="cb5-38"><a href="#cb5-38"></a></span>
+<span id="cb5-39"><a href="#cb5-39"></a><span class="co"># first create a new directory to add the overlay images to</span></span>
+<span id="cb5-40"><a href="#cb5-40"></a><span class="fu">dir.create</span>(<span class="fu">paste0</span>(new_directory, <span class="st">"/with_overlay/"</span>))</span>
+<span id="cb5-41"><a href="#cb5-41"></a></span>
+<span id="cb5-42"><a href="#cb5-42"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(files_lst)) {</span>
+<span id="cb5-43"><a href="#cb5-43"></a>  background_image <span class="ot">&lt;-</span> magick<span class="sc">::</span><span class="fu">image_read</span>(files_lst[t])</span>
+<span id="cb5-44"><a href="#cb5-44"></a>  overlay <span class="ot">&lt;-</span></span>
+<span id="cb5-45"><a href="#cb5-45"></a>    magick<span class="sc">::</span><span class="fu">image_read</span>(overlay_file)</span>
+<span id="cb5-46"><a href="#cb5-46"></a>  image_dir <span class="ot">&lt;-</span> <span class="fu">dirname</span>(files_lst[t])</span>
+<span id="cb5-47"><a href="#cb5-47"></a>  overlay_image_dir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(image_dir, <span class="st">"/with_overlay/"</span>)</span>
+<span id="cb5-48"><a href="#cb5-48"></a>  new_filename <span class="ot">&lt;-</span></span>
+<span id="cb5-49"><a href="#cb5-49"></a>    <span class="fu">paste0</span>(overlay_image_dir,</span>
+<span id="cb5-50"><a href="#cb5-50"></a>           <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(files_lst[t])),</span>
+<span id="cb5-51"><a href="#cb5-51"></a>           <span class="st">"_with_overlay.jpg"</span>)</span>
+<span id="cb5-52"><a href="#cb5-52"></a>  <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Adding Overlay to create: "</span>, new_filename))</span>
+<span id="cb5-53"><a href="#cb5-53"></a>  img <span class="ot">&lt;-</span> <span class="fu">c</span>(background_image, overlay) <span class="sc">%&gt;%</span></span>
+<span id="cb5-54"><a href="#cb5-54"></a>    magick<span class="sc">::</span><span class="fu">image_flatten</span>(.) <span class="sc">%&gt;%</span></span>
+<span id="cb5-55"><a href="#cb5-55"></a>    magick<span class="sc">::</span><span class="fu">image_write</span>(., new_filename, <span class="at">format =</span> <span class="st">"jpg"</span>)</span>
+<span id="cb5-56"><a href="#cb5-56"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="generate-kml" class="level2">
+<h2 class="anchored" data-anchor-id="generate-kml">Generate KML</h2>
+<p>This code generates a <a href="https://earth.google.com">google earth</a> kml file linking to the image files in the folder generated above. It uses <a href="https://exiftool.org/">ExifTool</a> with a template “kml_hide_rollover.fmt” to create the kml file.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>  directory <span class="ot">&lt;-</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="co">#OR</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>}</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb6-10"><a href="#cb6-10"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">50</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>}</span>
+<span id="cb6-12"><a href="#cb6-12"></a></span>
+<span id="cb6-13"><a href="#cb6-13"></a>new_directory <span class="ot">&lt;-</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb6-15"><a href="#cb6-15"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb6-16"><a href="#cb6-16"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb6-17"><a href="#cb6-17"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
+<span id="cb6-18"><a href="#cb6-18"></a></span>
+<span id="cb6-19"><a href="#cb6-19"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb6-21"><a href="#cb6-21"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb6-22"><a href="#cb6-22"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb6-23"><a href="#cb6-23"></a>         <span class="st">"m_apart_with_overlay.kml"</span>)</span>
+<span id="cb6-24"><a href="#cb6-24"></a></span>
+<span id="cb6-25"><a href="#cb6-25"></a>exif_args <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"-p"</span>, <span class="st">"kml_hide_rollover.fmt"</span>, <span class="st">"-r"</span>)</span>
+<span id="cb6-26"><a href="#cb6-26"></a><span class="fu">exif_call</span>(</span>
+<span id="cb6-27"><a href="#cb6-27"></a>  <span class="at">args =</span> exif_args,</span>
+<span id="cb6-28"><a href="#cb6-28"></a>  <span class="at">path =</span> new_directory,</span>
+<span id="cb6-29"><a href="#cb6-29"></a>  <span class="at">stdout =</span> output_kml,</span>
+<span id="cb6-30"><a href="#cb6-30"></a>  <span class="at">quiet =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-31"><a href="#cb6-31"></a>)</span>
+<span id="cb6-32"><a href="#cb6-32"></a></span>
+<span id="cb6-33"><a href="#cb6-33"></a><span class="co"># now fix the links to the images to make them relative.</span></span>
+<span id="cb6-34"><a href="#cb6-34"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(output_kml)</span>
+<span id="cb6-35"><a href="#cb6-35"></a>path_only <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">dirname</span>(output_kml))</span>
+<span id="cb6-36"><a href="#cb6-36"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(path_only, <span class="st">"."</span>, mystring, <span class="at">fixed =</span> T)</span>
+<span id="cb6-37"><a href="#cb6-37"></a></span>
+<span id="cb6-38"><a href="#cb6-38"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(output_kml))</span>
+<span id="cb6-39"><a href="#cb6-39"></a>  <span class="fu">writeLines</span>(mystring2)</span>
+<span id="cb6-40"><a href="#cb6-40"></a><span class="fu">sink</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="convert-kml-images-into-a-kmz" class="level2">
+<h2 class="anchored" data-anchor-id="convert-kml-images-into-a-kmz">Convert kml &amp; images into a kmz</h2>
+<p>This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">library</span>(zip)</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
+<span id="cb7-4"><a href="#cb7-4"></a>  directory <span class="ot">&lt;-</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="co">#OR</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>}</span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb7-11"><a href="#cb7-11"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13"></a></span>
+<span id="cb7-14"><a href="#cb7-14"></a>new_directory <span class="ot">&lt;-</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-16"><a href="#cb7-16"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-17"><a href="#cb7-17"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-18"><a href="#cb7-18"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
+<span id="cb7-19"><a href="#cb7-19"></a></span>
+<span id="cb7-20"><a href="#cb7-20"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-22"><a href="#cb7-22"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-23"><a href="#cb7-23"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-24"><a href="#cb7-24"></a>         <span class="st">"m_apart_with_overlay.kml"</span>)</span>
+<span id="cb7-25"><a href="#cb7-25"></a></span>
+<span id="cb7-26"><a href="#cb7-26"></a><span class="fu">print</span>(<span class="st">"Generating kmz file for:"</span>)</span>
+<span id="cb7-27"><a href="#cb7-27"></a><span class="fu">print</span>(output_kml)</span>
+<span id="cb7-28"><a href="#cb7-28"></a></span>
+<span id="cb7-29"><a href="#cb7-29"></a>kml_file_name <span class="ot">&lt;-</span> <span class="fu">basename</span>(output_kml)</span>
+<span id="cb7-30"><a href="#cb7-30"></a>kml_image_directory <span class="ot">&lt;-</span> new_directory</span>
+<span id="cb7-31"><a href="#cb7-31"></a></span>
+<span id="cb7-32"><a href="#cb7-32"></a>dir_to_copy <span class="ot">&lt;-</span> kml_image_directory</span>
+<span id="cb7-33"><a href="#cb7-33"></a>temp_folder <span class="ot">&lt;-</span> <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory), <span class="st">"/temp"</span>)</span>
+<span id="cb7-34"><a href="#cb7-34"></a>new_dir_path <span class="ot">&lt;-</span> <span class="fu">paste0</span>(temp_folder, <span class="st">"/files/"</span>)</span>
+<span id="cb7-35"><a href="#cb7-35"></a>fs<span class="sc">::</span><span class="fu">dir_copy</span>(dir_to_copy, new_dir_path, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-36"><a href="#cb7-36"></a>fs<span class="sc">::</span><span class="fu">file_copy</span>(output_kml, temp_folder, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-37"><a href="#cb7-37"></a><span class="fu">file.rename</span>(</span>
+<span id="cb7-38"><a href="#cb7-38"></a>  <span class="at">from =</span> <span class="fu">file.path</span>(temp_folder, kml_file_name),</span>
+<span id="cb7-39"><a href="#cb7-39"></a>  <span class="at">to =</span> <span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)</span>
+<span id="cb7-40"><a href="#cb7-40"></a>)</span>
+<span id="cb7-41"><a href="#cb7-41"></a></span>
+<span id="cb7-42"><a href="#cb7-42"></a><span class="co">#clean up all of the extra line breaks in the kml file</span></span>
+<span id="cb7-43"><a href="#cb7-43"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>))</span>
+<span id="cb7-44"><a href="#cb7-44"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring, <span class="at">fixed =</span> T)</span>
+<span id="cb7-45"><a href="#cb7-45"></a>mystring3 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring2, <span class="at">fixed =</span> T)</span>
+<span id="cb7-46"><a href="#cb7-46"></a>mystring4 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring3, <span class="at">fixed =</span> T)</span>
+<span id="cb7-47"><a href="#cb7-47"></a>mystring5 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring4, <span class="at">fixed =</span> T)</span>
+<span id="cb7-48"><a href="#cb7-48"></a>mystring6 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\n\r\n</span><span class="st">'</span>, <span class="st">' '</span>, mystring5, <span class="at">fixed =</span> T)</span>
+<span id="cb7-49"><a href="#cb7-49"></a></span>
+<span id="cb7-50"><a href="#cb7-50"></a><span class="co"># Extract the part of the string after the last '/'</span></span>
+<span id="cb7-51"><a href="#cb7-51"></a>last_part_dir <span class="ot">&lt;-</span> <span class="fu">tail</span>(<span class="fu">strsplit</span>(new_directory, <span class="st">"/"</span>)[[<span class="dv">1</span>]], <span class="dv">2</span>)</span>
+<span id="cb7-52"><a href="#cb7-52"></a>mykml <span class="ot">&lt;-</span></span>
+<span id="cb7-53"><a href="#cb7-53"></a>  stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mystring6[<span class="dv">1</span>], <span class="fu">paste0</span>(<span class="st">"src='./"</span>, last_part_dir[<span class="dv">1</span>],<span class="st">"/"</span>, last_part_dir[<span class="dv">2</span>]), <span class="st">"src='files"</span>)</span>
+<span id="cb7-54"><a href="#cb7-54"></a></span>
+<span id="cb7-55"><a href="#cb7-55"></a>mykml <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mykml[<span class="dv">1</span>], <span class="st">"&lt;name&gt;./"</span>, <span class="st">"&lt;name&gt;"</span>)</span>
+<span id="cb7-56"><a href="#cb7-56"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)))</span>
+<span id="cb7-57"><a href="#cb7-57"></a><span class="fu">writeLines</span>(mykml)</span>
+<span id="cb7-58"><a href="#cb7-58"></a><span class="fu">sink</span>()</span>
+<span id="cb7-59"><a href="#cb7-59"></a></span>
+<span id="cb7-60"><a href="#cb7-60"></a><span class="co"># name for new kmz file</span></span>
+<span id="cb7-61"><a href="#cb7-61"></a>kmz_file_name <span class="ot">&lt;-</span></span>
+<span id="cb7-62"><a href="#cb7-62"></a>  <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory),</span>
+<span id="cb7-63"><a href="#cb7-63"></a>         <span class="st">"/"</span>,</span>
+<span id="cb7-64"><a href="#cb7-64"></a>         <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(output_kml)),</span>
+<span id="cb7-65"><a href="#cb7-65"></a>         <span class="st">".kmz"</span>)</span>
+<span id="cb7-66"><a href="#cb7-66"></a></span>
+<span id="cb7-67"><a href="#cb7-67"></a><span class="co"># create the kmz file</span></span>
+<span id="cb7-68"><a href="#cb7-68"></a>myWd <span class="ot">&lt;-</span> temp_folder</span>
+<span id="cb7-69"><a href="#cb7-69"></a>files_lst <span class="ot">&lt;-</span></span>
+<span id="cb7-70"><a href="#cb7-70"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb7-71"><a href="#cb7-71"></a>    <span class="at">path =</span> temp_folder,</span>
+<span id="cb7-72"><a href="#cb7-72"></a>    <span class="at">pattern =</span> <span class="st">"*.jpg|*.kml"</span>,</span>
+<span id="cb7-73"><a href="#cb7-73"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-74"><a href="#cb7-74"></a>    <span class="at">full.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-75"><a href="#cb7-75"></a>    <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-76"><a href="#cb7-76"></a>    <span class="at">ignore.case =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-77"><a href="#cb7-77"></a>    <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-78"><a href="#cb7-78"></a>  )</span>
+<span id="cb7-79"><a href="#cb7-79"></a></span>
+<span id="cb7-80"><a href="#cb7-80"></a><span class="co"># zip the file up</span></span>
+<span id="cb7-81"><a href="#cb7-81"></a>zip<span class="sc">::</span><span class="fu">zip</span>(</span>
+<span id="cb7-82"><a href="#cb7-82"></a>  kmz_file_name,</span>
+<span id="cb7-83"><a href="#cb7-83"></a>  files_lst,</span>
+<span id="cb7-84"><a href="#cb7-84"></a>  <span class="at">recurse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-85"><a href="#cb7-85"></a>  <span class="at">compression_level =</span> <span class="dv">9</span>,</span>
+<span id="cb7-86"><a href="#cb7-86"></a>  <span class="at">include_directories =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-87"><a href="#cb7-87"></a>  <span class="at">root =</span> myWd,</span>
+<span id="cb7-88"><a href="#cb7-88"></a>  <span class="at">mode =</span> <span class="st">"mirror"</span></span>
+<span id="cb7-89"><a href="#cb7-89"></a>)</span>
+<span id="cb7-90"><a href="#cb7-90"></a></span>
+<span id="cb7-91"><a href="#cb7-91"></a><span class="co"># remove the temp folder and its contents</span></span>
+<span id="cb7-92"><a href="#cb7-92"></a><span class="fu">unlink</span>(temp_folder, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
