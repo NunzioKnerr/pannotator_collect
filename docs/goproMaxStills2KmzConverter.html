@@ -8,7 +8,7 @@
 
 <meta name="author" content="Nunzio Knerr">
 <meta name="author" content="Robert Godfree">
-<meta name="dcterms.date" content="2024-10-25">
+<meta name="dcterms.date" content="2024-10-28">
 
 <title>gopro max stills 2 kmz converter</title>
 <style>
@@ -152,7 +152,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 25, 2024</p>
+      <p class="date">October 28, 2024</p>
     </div>
   </div>
   
@@ -168,10 +168,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="description-of-the-workflow">Description of the Workflow</h2>
 <p>This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images.</p>
 <p>These can be taken with a gopro Max camera or most consumer drones like those made by DJI.</p>
-<p>Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created.</p>
+<p>Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.</p>
+<p>Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.</p>
 <p>The workflow is as follows:</p>
 <ol type="1">
-<li><p>Rename the files (this renames your original files, we suggest making a backup before using the workflow)</p></li>
+<li><p>Rename the files</p></li>
 <li><p>Get subset of images a specified distance apart</p></li>
 <li><p>Add overlays to the images</p></li>
 <li><p>Create a google earth .kml file</p></li>
@@ -225,60 +226,62 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A typical file name follows the format GS__XXXX.JPG - where XXXX is a counter number of the images taken by the camera.</p>
 <p>To address this issue and make it easier to manage the files for processing, this code appends the date_time stamp to the beginning of the files in a given directory. It’s useful for organising files when doing field work, especially when using multiple cameras at the same time.</p>
 <p>The output format is: YYYYMMDD_HHMMSS_FileName.ext</p>
-<p>Note: Gopro now have custom firmware that allows you to set the filenames in the field see this GoPro Labs <a href="https://gopro.github.io/labs/control/basename/">link</a>.</p>
+<p>Note: Gopro now have custom firmware that allows you to set the file names in the field see this GoPro Labs <a href="https://gopro.github.io/labs/control/basename/">link</a>.</p>
 <p>This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(tcltk)</span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(exiftoolr)</span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co">#This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>directory <span class="ot">&lt;-</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">"gopro_images"</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="co">#OR</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="co">#directory &lt;- "C:/FolderToUse/"</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#file_extension &lt;- "\\.JPG$"</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a></span>
-<span id="cb2-12"><a href="#cb2-12"></a>my_files <span class="ot">&lt;-</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>    directory,</span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(<span class="st">"*"</span>, file_extension),</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb2-17"><a href="#cb2-17"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>  )</span>
-<span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
-<span id="cb2-21"><a href="#cb2-21"></a>files_df <span class="ot">&lt;-</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
-<span id="cb2-23"><a href="#cb2-23"></a></span>
-<span id="cb2-24"><a href="#cb2-24"></a><span class="co">#Loop through the files and check to change files names</span></span>
-<span id="cb2-25"><a href="#cb2-25"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
-<span id="cb2-26"><a href="#cb2-26"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
-<span id="cb2-27"><a href="#cb2-27"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
-<span id="cb2-28"><a href="#cb2-28"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(files_df[i, <span class="st">"System:FileName"</span>]) <span class="sc">==</span> <span class="dv">12</span>) {</span>
-<span id="cb2-29"><a href="#cb2-29"></a>    <span class="fu">print</span>(<span class="st">"File appears to be 12 characters long"</span>)</span>
-<span id="cb2-30"><a href="#cb2-30"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
-<span id="cb2-31"><a href="#cb2-31"></a>    origFullFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"SourceFile"</span>])</span>
-<span id="cb2-32"><a href="#cb2-32"></a>    createDate <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"ExifIFD:DateTimeOriginal"</span>])</span>
-<span id="cb2-33"><a href="#cb2-33"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"CreateDate: "</span>, createDate))</span>
-<span id="cb2-34"><a href="#cb2-34"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(createDate, <span class="st">":"</span>, <span class="st">""</span>)</span>
-<span id="cb2-35"><a href="#cb2-35"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(formattedCreateDate, <span class="st">" "</span>, <span class="st">"_"</span>)</span>
-<span id="cb2-36"><a href="#cb2-36"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"formattedCreateDate: "</span>, formattedCreateDate))</span>
-<span id="cb2-37"><a href="#cb2-37"></a>    file_ext <span class="ot">&lt;-</span> <span class="fu">tolower</span>(tools<span class="sc">::</span><span class="fu">file_ext</span>(files_df[i, <span class="st">"System:FileName"</span>]))</span>
-<span id="cb2-38"><a href="#cb2-38"></a>    newFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"System:Directory"</span>], <span class="st">"/"</span>, formattedCreateDate,<span class="st">"_"</span>,tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(<span class="fu">basename</span>(files_df[i, <span class="st">"System:FileName"</span>])), <span class="st">"."</span>,file_ext)</span>
-<span id="cb2-39"><a href="#cb2-39"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"newFileName: "</span>, newFileName))</span>
-<span id="cb2-40"><a href="#cb2-40"></a>    <span class="fu">file.rename</span>(<span class="at">from =</span> origFullFileName, <span class="at">to =</span> newFileName)</span>
-<span id="cb2-41"><a href="#cb2-41"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
-<span id="cb2-42"><a href="#cb2-42"></a>  } <span class="cf">else</span> {</span>
-<span id="cb2-43"><a href="#cb2-43"></a>    <span class="fu">print</span>(</span>
-<span id="cb2-44"><a href="#cb2-44"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
-<span id="cb2-45"><a href="#cb2-45"></a>    )</span>
-<span id="cb2-46"><a href="#cb2-46"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
-<span id="cb2-47"><a href="#cb2-47"></a>  }</span>
-<span id="cb2-48"><a href="#cb2-48"></a>  </span>
-<span id="cb2-49"><a href="#cb2-49"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">library</span>(tools)</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co">#This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>directory <span class="ot">&lt;-</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>  tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">"gopro_images"</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#OR</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="co">#directory &lt;- "C:/FolderToUse/"</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="co">#file_extension &lt;- "\\.JPG$"</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    directory,</span>
+<span id="cb2-17"><a href="#cb2-17"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(<span class="st">"*"</span>, file_extension),</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>  )</span>
+<span id="cb2-21"><a href="#cb2-21"></a></span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>files_df <span class="ot">&lt;-</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb2-25"><a href="#cb2-25"></a></span>
+<span id="cb2-26"><a href="#cb2-26"></a><span class="co">#Loop through the files and check to change files names</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
+<span id="cb2-29"><a href="#cb2-29"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
+<span id="cb2-30"><a href="#cb2-30"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(files_df[i, <span class="st">"System:FileName"</span>]) <span class="sc">==</span> <span class="dv">12</span>) {</span>
+<span id="cb2-31"><a href="#cb2-31"></a>    <span class="fu">print</span>(<span class="st">"File appears to be 12 characters long"</span>)</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb2-33"><a href="#cb2-33"></a>    origFullFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"SourceFile"</span>])</span>
+<span id="cb2-34"><a href="#cb2-34"></a>    createDate <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"ExifIFD:DateTimeOriginal"</span>])</span>
+<span id="cb2-35"><a href="#cb2-35"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"CreateDate: "</span>, createDate))</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(createDate, <span class="st">":"</span>, <span class="st">""</span>)</span>
+<span id="cb2-37"><a href="#cb2-37"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(formattedCreateDate, <span class="st">" "</span>, <span class="st">"_"</span>)</span>
+<span id="cb2-38"><a href="#cb2-38"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"formattedCreateDate: "</span>, formattedCreateDate))</span>
+<span id="cb2-39"><a href="#cb2-39"></a>    file_ext <span class="ot">&lt;-</span> <span class="fu">tolower</span>(tools<span class="sc">::</span><span class="fu">file_ext</span>(files_df[i, <span class="st">"System:FileName"</span>]))</span>
+<span id="cb2-40"><a href="#cb2-40"></a>    newFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"System:Directory"</span>], <span class="st">"/"</span>, formattedCreateDate,<span class="st">"_"</span>,tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(<span class="fu">basename</span>(files_df[i, <span class="st">"System:FileName"</span>])), <span class="st">"."</span>,file_ext)</span>
+<span id="cb2-41"><a href="#cb2-41"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"newFileName: "</span>, newFileName))</span>
+<span id="cb2-42"><a href="#cb2-42"></a>    <span class="fu">file.rename</span>(<span class="at">from =</span> origFullFileName, <span class="at">to =</span> newFileName)</span>
+<span id="cb2-43"><a href="#cb2-43"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
+<span id="cb2-44"><a href="#cb2-44"></a>  } <span class="cf">else</span> {</span>
+<span id="cb2-45"><a href="#cb2-45"></a>    <span class="fu">print</span>(</span>
+<span id="cb2-46"><a href="#cb2-46"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
+<span id="cb2-47"><a href="#cb2-47"></a>    )</span>
+<span id="cb2-48"><a href="#cb2-48"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb2-49"><a href="#cb2-49"></a>  }</span>
+<span id="cb2-50"><a href="#cb2-50"></a>  </span>
+<span id="cb2-51"><a href="#cb2-51"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -375,43 +378,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="call-function-above" class="level2">
 <h2 class="anchored" data-anchor-id="call-function-above">Call Function Above</h2>
-<p>Now call the function above to calculate the distance between all the images and copy them to a new folder</p>
+<p>Now call the function above to calculate the distance between all the images and copy them to a new folder.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
-<span id="cb4-2"><a href="#cb4-2"></a>  directory <span class="ot">&lt;-</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4"></a>}</span>
-<span id="cb4-5"><a href="#cb4-5"></a></span>
-<span id="cb4-6"><a href="#cb4-6"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a></span>
-<span id="cb4-8"><a href="#cb4-8"></a>my_files <span class="ot">&lt;-</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb4-10"><a href="#cb4-10"></a>    directory,</span>
-<span id="cb4-11"><a href="#cb4-11"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
-<span id="cb4-12"><a href="#cb4-12"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb4-13"><a href="#cb4-13"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>  )</span>
-<span id="cb4-15"><a href="#cb4-15"></a></span>
-<span id="cb4-16"><a href="#cb4-16"></a>image_files_df <span class="ot">&lt;-</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(tcltk)</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">library</span>(exiftoolr)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  directory <span class="ot">&lt;-</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7"></a>}</span>
+<span id="cb4-8"><a href="#cb4-8"></a></span>
+<span id="cb4-9"><a href="#cb4-9"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    directory,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
+<span id="cb4-15"><a href="#cb4-15"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-16"><a href="#cb4-16"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a>  )</span>
 <span id="cb4-18"><a href="#cb4-18"></a></span>
-<span id="cb4-19"><a href="#cb4-19"></a><span class="co">#View(image_files_df)</span></span>
-<span id="cb4-20"><a href="#cb4-20"></a></span>
-<span id="cb4-21"><a href="#cb4-21"></a>gpx_locs <span class="ot">&lt;-</span></span>
-<span id="cb4-22"><a href="#cb4-22"></a>  <span class="fu">as.data.frame</span>(image_files_df[, <span class="fu">c</span>(</span>
-<span id="cb4-23"><a href="#cb4-23"></a>    <span class="st">"SourceFile"</span>,</span>
-<span id="cb4-24"><a href="#cb4-24"></a>    <span class="st">"System:Directory"</span>,</span>
-<span id="cb4-25"><a href="#cb4-25"></a>    <span class="st">"Composite:GPSLatitude"</span>,</span>
-<span id="cb4-26"><a href="#cb4-26"></a>    <span class="st">"Composite:GPSLongitude"</span></span>
-<span id="cb4-27"><a href="#cb4-27"></a>  )])</span>
-<span id="cb4-28"><a href="#cb4-28"></a></span>
-<span id="cb4-29"><a href="#cb4-29"></a><span class="co">#View(gpx_locs)</span></span>
-<span id="cb4-30"><a href="#cb4-30"></a></span>
-<span id="cb4-31"><a href="#cb4-31"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb4-32"><a href="#cb4-32"></a></span>
-<span id="cb4-33"><a href="#cb4-33"></a><span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-19"><a href="#cb4-19"></a>image_files_df <span class="ot">&lt;-</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb4-21"><a href="#cb4-21"></a></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#View(image_files_df)</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a></span>
+<span id="cb4-24"><a href="#cb4-24"></a>gpx_locs <span class="ot">&lt;-</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a>  <span class="fu">as.data.frame</span>(image_files_df[, <span class="fu">c</span>(</span>
+<span id="cb4-26"><a href="#cb4-26"></a>    <span class="st">"SourceFile"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27"></a>    <span class="st">"System:Directory"</span>,</span>
+<span id="cb4-28"><a href="#cb4-28"></a>    <span class="st">"Composite:GPSLatitude"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29"></a>    <span class="st">"Composite:GPSLongitude"</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a>  )])</span>
+<span id="cb4-31"><a href="#cb4-31"></a></span>
+<span id="cb4-32"><a href="#cb4-32"></a><span class="co">#View(gpx_locs)</span></span>
+<span id="cb4-33"><a href="#cb4-33"></a></span>
+<span id="cb4-34"><a href="#cb4-34"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a></span>
+<span id="cb4-36"><a href="#cb4-36"></a><span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
