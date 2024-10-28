@@ -18,7 +18,7 @@ format:
   pdf:
     pdf-engine: lualatex
     toc: true
-    toc-depth: 3
+    number-depth: 1
     number-sections: true
     colorlinks: true
     include-in-header:
