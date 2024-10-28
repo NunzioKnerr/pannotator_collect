@@ -39,11 +39,13 @@ This workflow has been developed to allow easy creation of .kmz files from 360 p
 
 These can be taken with a gopro Max camera or most consumer drones like those made by DJI.
 
-Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created.
+Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.
+
+Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.
 
 The workflow is as follows:
 
-1.  Rename the files (this renames your original files, we suggest making a backup before using the workflow)
+1.  Rename the files
 
 2.  Get subset of images a specified distance apart
 
@@ -105,7 +107,7 @@ To address this issue and make it easier to manage the files for processing, thi
 
 The output format is: YYYYMMDD_HHMMSS_FileName.ext
 
-Note: Gopro now have custom firmware that allows you to set the filenames in the field see this GoPro Labs [link](https://gopro.github.io/labs/control/basename/).
+Note: Gopro now have custom firmware that allows you to set the file names in the field see this GoPro Labs [link](https://gopro.github.io/labs/control/basename/).
 
 This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.
 
@@ -113,6 +115,8 @@ This code checks the file name length initially assuming that files names direct
 
 library(tcltk)
 library(exiftoolr)
+library(stringr)
+library(tools)
 
 #This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed
 directory <-
@@ -256,9 +260,12 @@ findImagesEveryXmetres <-
 
 ## Call Function Above
 
-Now call the function above to calculate the distance between all the images and copy them to a new folder
+Now call the function above to calculate the distance between all the images and copy them to a new folder.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
+
+library(tcltk)
+library(exiftoolr)
 
 if (!exists("directory")) {
   directory <-
@@ -290,7 +297,7 @@ gpx_locs <-
 
 #View(gpx_locs)
 
-metresBetweenEachImageWanted <- 1
+metresBetweenEachImageWanted <- 10
 
 findImagesEveryXmetres(my_gpx_locs = gpx_locs, metresToNextImage = metresBetweenEachImageWanted)
 
