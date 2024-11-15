@@ -39,7 +39,7 @@ This workflow creates a .kmz file from geocoded 360° images taken with a GoPro 
 
 ## Description of the Workflow
 
-This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.
+This workflow has been developed to allow easy creation of .kmz files from 360 degree panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.
 
 Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.
 
@@ -51,8 +51,8 @@ The workflow code below is as follows:
 
 2.  Set user options:
 
-    \> folder containing 360 jpegs\
-    \> distance between images\
+    \> folder containing 360 degree images (jpgs)\
+    \> distance between images (metres)\
     \> add overlays (True/False)\
     \> overlay file to use (png with transparency)
 
@@ -117,11 +117,11 @@ Here we set the user options which will be used in the following code chunks
 # Choose the directory path containing 360 images.
 directory <- rstudioapi::selectDirectory(caption = "Select Directory Containing 360 images", label = "Select", path = rstudioapi::getActiveProject())
 # OR
-# add path manually
+# add path manually: use forward slashed only.
 # directory <- "C:/FolderContaining360Images/"
 
 # Select the minimum distance in metres between each extracted image.
-# For example, set metresBetweenEachImageWanted <- 1 to extract images a minimum of 1 metre apart.
+# For example, set metresBetweenEachImageWanted <- 100 to extract images a minimum of 100 metre apart.
 
 metresBetweenEachImageWanted <- 100
 
@@ -149,7 +149,7 @@ To address this issue and make it easier to manage the files for processing, thi
 
 The output format is: YYYYMMDD_HHMMSS_FileName.ext
 
-Note: Gopro now have custom firmware that allows you to set the file names in the field see this GoPro Labs [link](https://gopro.github.io/labs/control/basename/).
+Note: Gopro now have a custom firmware allowing you to set file names in the field; see this GoPro Labs [link](https://gopro.github.io/labs/control/basename/).
 
 This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.
 
@@ -178,7 +178,7 @@ my_files <-
 #read the exif information in the file to get the creation date
 files_df <- exiftoolr::exif_read(my_files, args = c("-G1", "-a", "-s"))
 
-#Loop through the files and check to change files names
+#Loop through the files and check to change file names
 #this checks if the files have already been changed by looking at the length of the file name.
 for (i in 1:nrow(files_df)) {
   print("Checking if camera file name has not been changed")
@@ -198,7 +198,7 @@ for (i in 1:nrow(files_df)) {
     print("File name changed")
   } else {
     print(
-      "It appears that the files have already been renamed as it's greater than 12 characters long"
+      "It appears that the file has already been renamed as it's greater than 12 characters long"
     )
     print(paste0("SourceFile: ", files_df[i, "SourceFile"]))
   }
@@ -209,7 +209,7 @@ for (i in 1:nrow(files_df)) {
 
 ## Function to calculate distances between image geo-locations.
 
-This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough..
+This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
@@ -336,7 +336,6 @@ gpx_locs <-
 
 #View(gpx_locs)
 
-# Check if 'directory' is set and valid, throw an error if not
 if (!exists("metresBetweenEachImageWanted")) {
   print("'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted")
   findImagesEveryXmetres(my_gpx_locs = gpx_locs)
@@ -348,17 +347,17 @@ if (!exists("metresBetweenEachImageWanted")) {
 
 ## Add Overlays to the Images
 
-This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 images as the focal length of the lens etc. will define how the overlay should look.
+This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 degree images as the focal length of the lens etc. will define how the overlay should look.
 
 In this example we used a gopro Max at 3.2m above the ground. The easiest way to determine how an overlay should look is to take some images with the camera at the specified height with the desired overlay marked on the ground so you have an easy template to base your overlay on.
 
-Here we wanted a circular marker at a 5 metre radius and we were lucky to find a round concrete water tank buried in the ground with the required radius. We marked the distance in metres from the centre of the plot directly under the camera using a pole with black marking tape at 1 metre intervals. Below is the image loaded into [inkscape](https://inkscape.org/) so we could draw the required marker lines for the overlay.
+Here we wanted a circular marker with a 5 metre radius and we were lucky to find a round concrete water tank buried in the ground with the required radius. We marked the distance in metres from the centre of the plot directly under the camera using a pole with black marking tape at 1 metre intervals. Below is the image loaded into [inkscape](https://inkscape.org/) so we could draw the required marker lines for the overlay.
 
 ![overlay image with camera background](overlay_files/example_overlay_one_water_tank.png)
 
 Note: There is a slight discrepancy with the line on the right side of the image. This is due to the camera not being exactly vertical when capturing the image.
 
-The overlay was created using inkscape and the exported as a portable network graphics (.png) file with transparency. See the example below:
+The overlay was created using inkscape and then exported as a portable network graphics (.png) file with transparency. See the example below:
 
 ![overlay image with transparency](overlay_files/5m_overlay_wedges_straight6.png)
 
@@ -375,14 +374,14 @@ if (!exists("directory") || !dir.exists(paste0(directory))) {
   )
 }
 
-# if it doesn't exist then add the default metres between images
+# if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
   metresBetweenEachImageWanted <- 20
 }
 
-# if it doesn't exist then throw up a dialog to select the overlay
+# if 'addOverlays' doesn't exist then throw an error asking to set 'addOverlays'
 if (!exists("addOverlays")) {
   stop("'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays.")
 }
@@ -450,7 +449,7 @@ if (!exists("directory") || !dir.exists(paste0(directory))) {
   )
 }
 
-# if it doesn't exist then add the default metres between images
+# if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
@@ -510,7 +509,7 @@ print(paste0("generated kml file: ", output_kml))
 
 This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.
 
-NOTE: This code can generate kmz files \>2GB. these files won't open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it [here](https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth).
+NOTE: This code can generate kmz files \>2GB. These files won't open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it [here](https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth).
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
@@ -522,7 +521,7 @@ if (!exists("directory") || !dir.exists(paste0(directory))) {
   )
 }
 
-# if it doesn't exist then add the default metres between images
+# if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )

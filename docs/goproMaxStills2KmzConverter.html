@@ -172,15 +172,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="description-of-the-workflow" class="level2">
 <h2 class="anchored" data-anchor-id="description-of-the-workflow">Description of the Workflow</h2>
-<p>This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.</p>
+<p>This workflow has been developed to allow easy creation of .kmz files from 360 degree panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.</p>
 <p>Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.</p>
 <p>Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.</p>
 <p>The workflow code below is as follows:</p>
 <ol type="1">
 <li><p>Check and install required packages</p></li>
 <li><p>Set user options:</p>
-<p>&gt; folder containing 360 jpegs<br>
-&gt; distance between images<br>
+<p>&gt; folder containing 360 degree images (jpgs)<br>
+&gt; distance between images (metres)<br>
 &gt; add overlays (True/False)<br>
 &gt; overlay file to use (png with transparency)</p></li>
 <li><p>Rename the files (only renames files if names are 12 characters long)</p></li>
@@ -240,11 +240,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># Choose the directory path containing 360 images.</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a>directory <span class="ot">&lt;-</span> rstudioapi<span class="sc">::</span><span class="fu">selectDirectory</span>(<span class="at">caption =</span> <span class="st">"Select Directory Containing 360 images"</span>, <span class="at">label =</span> <span class="st">"Select"</span>, <span class="at">path =</span> rstudioapi<span class="sc">::</span><span class="fu">getActiveProject</span>())</span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co"># OR</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># add path manually</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># add path manually: use forward slashed only.</span></span>
 <span id="cb2-5"><a href="#cb2-5"></a><span class="co"># directory &lt;- "C:/FolderContaining360Images/"</span></span>
 <span id="cb2-6"><a href="#cb2-6"></a></span>
 <span id="cb2-7"><a href="#cb2-7"></a><span class="co"># Select the minimum distance in metres between each extracted image.</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="co"># For example, set metresBetweenEachImageWanted &lt;- 1 to extract images a minimum of 1 metre apart.</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="co"># For example, set metresBetweenEachImageWanted &lt;- 100 to extract images a minimum of 100 metre apart.</span></span>
 <span id="cb2-9"><a href="#cb2-9"></a></span>
 <span id="cb2-10"><a href="#cb2-10"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">100</span></span>
 <span id="cb2-11"><a href="#cb2-11"></a></span>
@@ -266,9 +266,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="rename-files">Rename Files</h2>
 <p>By default most consumer cameras like the gopro max &amp; DJI drones don’t allow the user to specify the file names they apply to images that they create.</p>
 <p>A typical file name follows the format GS__XXXX.JPG - where XXXX is a counter number of the images taken by the camera.</p>
-<p>To address this issue and make it easier to manage the files for processing, this code appends the date_time stamp to the beginning of the files in a given directory. It’s useful for organising files when doing field work, especially when using multiple cameras at the same time.</p>
+<p>To address this issue and make it easier to manage the files for processing, this code pre-pends the date_time stamp to the beginning of the files in a given directory. It’s useful for organising files when doing field work, especially when using multiple cameras at the same time.</p>
 <p>The output format is: YYYYMMDD_HHMMSS_FileName.ext</p>
-<p>Note: Gopro now have custom firmware that allows you to set the file names in the field see this GoPro Labs <a href="https://gopro.github.io/labs/control/basename/">link</a>.</p>
+<p>Note: Gopro now have a custom firmware allowing you to set file names in the field; see this GoPro Labs <a href="https://gopro.github.io/labs/control/basename/">link</a>.</p>
 <p>This code checks the file name length initially assuming that files names directly downloaded from the camera are 12 characters long. If the files used have longer file names they will not be renamed. This ensures they are only renamed once.</p>
 <div class="cell">
 <details class="code-fold">
@@ -296,7 +296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-21"><a href="#cb3-21"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
 <span id="cb3-22"><a href="#cb3-22"></a>files_df <span class="ot">&lt;-</span> exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
 <span id="cb3-23"><a href="#cb3-23"></a></span>
-<span id="cb3-24"><a href="#cb3-24"></a><span class="co">#Loop through the files and check to change files names</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="co">#Loop through the files and check to change file names</span></span>
 <span id="cb3-25"><a href="#cb3-25"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
 <span id="cb3-26"><a href="#cb3-26"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
 <span id="cb3-27"><a href="#cb3-27"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
@@ -316,7 +316,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-41"><a href="#cb3-41"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
 <span id="cb3-42"><a href="#cb3-42"></a>  } <span class="cf">else</span> {</span>
 <span id="cb3-43"><a href="#cb3-43"></a>    <span class="fu">print</span>(</span>
-<span id="cb3-44"><a href="#cb3-44"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
+<span id="cb3-44"><a href="#cb3-44"></a>      <span class="st">"It appears that the file has already been renamed as it's greater than 12 characters long"</span></span>
 <span id="cb3-45"><a href="#cb3-45"></a>    )</span>
 <span id="cb3-46"><a href="#cb3-46"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
 <span id="cb3-47"><a href="#cb3-47"></a>  }</span>
@@ -327,7 +327,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="function-to-calculate-distances-between-image-geo-locations." class="level2">
 <h2 class="anchored" data-anchor-id="function-to-calculate-distances-between-image-geo-locations.">Function to calculate distances between image geo-locations.</h2>
-<p>This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough..</p>
+<p>This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -454,21 +454,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-30"><a href="#cb5-30"></a></span>
 <span id="cb5-31"><a href="#cb5-31"></a><span class="co">#View(gpx_locs)</span></span>
 <span id="cb5-32"><a href="#cb5-32"></a></span>
-<span id="cb5-33"><a href="#cb5-33"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
-<span id="cb5-34"><a href="#cb5-34"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
-<span id="cb5-35"><a href="#cb5-35"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted"</span>)</span>
-<span id="cb5-36"><a href="#cb5-36"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs)</span>
-<span id="cb5-37"><a href="#cb5-37"></a>} <span class="cf">else</span> {</span>
-<span id="cb5-38"><a href="#cb5-38"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span>
-<span id="cb5-39"><a href="#cb5-39"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-33"><a href="#cb5-33"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb5-34"><a href="#cb5-34"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted"</span>)</span>
+<span id="cb5-35"><a href="#cb5-35"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs)</span>
+<span id="cb5-36"><a href="#cb5-36"></a>} <span class="cf">else</span> {</span>
+<span id="cb5-37"><a href="#cb5-37"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span>
+<span id="cb5-38"><a href="#cb5-38"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 <section id="add-overlays-to-the-images" class="level2">
 <h2 class="anchored" data-anchor-id="add-overlays-to-the-images">Add Overlays to the Images</h2>
-<p>This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 images as the focal length of the lens etc. will define how the overlay should look.</p>
+<p>This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 degree images as the focal length of the lens etc. will define how the overlay should look.</p>
 <p>In this example we used a gopro Max at 3.2m above the ground. The easiest way to determine how an overlay should look is to take some images with the camera at the specified height with the desired overlay marked on the ground so you have an easy template to base your overlay on.</p>
-<p>Here we wanted a circular marker at a 5 metre radius and we were lucky to find a round concrete water tank buried in the ground with the required radius. We marked the distance in metres from the centre of the plot directly under the camera using a pole with black marking tape at 1 metre intervals. Below is the image loaded into <a href="https://inkscape.org/">inkscape</a> so we could draw the required marker lines for the overlay.</p>
+<p>Here we wanted a circular marker with a 5 metre radius and we were lucky to find a round concrete water tank buried in the ground with the required radius. We marked the distance in metres from the centre of the plot directly under the camera using a pole with black marking tape at 1 metre intervals. Below is the image loaded into <a href="https://inkscape.org/">inkscape</a> so we could draw the required marker lines for the overlay.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="overlay_files/example_overlay_one_water_tank.png" class="img-fluid figure-img"></p>
@@ -476,7 +475,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 <p>Note: There is a slight discrepancy with the line on the right side of the image. This is due to the camera not being exactly vertical when capturing the image.</p>
-<p>The overlay was created using inkscape and the exported as a portable network graphics (.png) file with transparency. See the example below:</p>
+<p>The overlay was created using inkscape and then exported as a portable network graphics (.png) file with transparency. See the example below:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="overlay_files/5m_overlay_wedges_straight6.png" class="img-fluid figure-img"></p>
@@ -496,14 +495,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-7"><a href="#cb6-7"></a>  )</span>
 <span id="cb6-8"><a href="#cb6-8"></a>}</span>
 <span id="cb6-9"><a href="#cb6-9"></a></span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images</span></span>
 <span id="cb6-11"><a href="#cb6-11"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
 <span id="cb6-12"><a href="#cb6-12"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
 <span id="cb6-13"><a href="#cb6-13"></a>  )</span>
 <span id="cb6-14"><a href="#cb6-14"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">20</span></span>
 <span id="cb6-15"><a href="#cb6-15"></a>}</span>
 <span id="cb6-16"><a href="#cb6-16"></a></span>
-<span id="cb6-17"><a href="#cb6-17"></a><span class="co"># if it doesn't exist then throw up a dialog to select the overlay</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co"># if 'addOverlays' doesn't exist then throw an error asking to set 'addOverlays'</span></span>
 <span id="cb6-18"><a href="#cb6-18"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"addOverlays"</span>)) {</span>
 <span id="cb6-19"><a href="#cb6-19"></a>  <span class="fu">stop</span>(<span class="st">"'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays."</span>)</span>
 <span id="cb6-20"><a href="#cb6-20"></a>}</span>
@@ -571,7 +570,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-4"><a href="#cb7-4"></a>  )</span>
 <span id="cb7-5"><a href="#cb7-5"></a>}</span>
 <span id="cb7-6"><a href="#cb7-6"></a></span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co"># if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images</span></span>
 <span id="cb7-8"><a href="#cb7-8"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
 <span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
 <span id="cb7-10"><a href="#cb7-10"></a>  )</span>
@@ -630,7 +629,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="convert-.kml-images-into-a-.kmz-file" class="level2">
 <h2 class="anchored" data-anchor-id="convert-.kml-images-into-a-.kmz-file">Convert .kml &amp; Images into a .kmz File</h2>
 <p>This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.</p>
-<p>NOTE: This code can generate kmz files &gt;2GB. these files won’t open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it <a href="https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth">here</a>.</p>
+<p>NOTE: This code can generate kmz files &gt;2GB. These files won’t open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it <a href="https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth">here</a>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -642,7 +641,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-6"><a href="#cb8-6"></a>  )</span>
 <span id="cb8-7"><a href="#cb8-7"></a>}</span>
 <span id="cb8-8"><a href="#cb8-8"></a></span>
-<span id="cb8-9"><a href="#cb8-9"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co"># if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images</span></span>
 <span id="cb8-10"><a href="#cb8-10"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
 <span id="cb8-11"><a href="#cb8-11"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
 <span id="cb8-12"><a href="#cb8-12"></a>  )</span>
