@@ -8,7 +8,7 @@
 
 <meta name="author" content="Nunzio Knerr">
 <meta name="author" content="Robert Godfree">
-<meta name="dcterms.date" content="2024-10-28">
+<meta name="dcterms.date" content="2024-11-15">
 
 <title>gopro max stills 2 kmz converter</title>
 <style>
@@ -118,14 +118,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#description-of-the-workflow" id="toc-description-of-the-workflow" class="nav-link active" data-scroll-target="#description-of-the-workflow">Description of the Workflow</a></li>
-  <li><a href="#check-install-dependent-packages" id="toc-check-install-dependent-packages" class="nav-link" data-scroll-target="#check-install-dependent-packages">Check &amp; Install Dependent Packages</a></li>
+  <li><a href="#tldr" id="toc-tldr" class="nav-link active" data-scroll-target="#tldr">TL;DR:</a></li>
+  <li><a href="#description-of-the-workflow" id="toc-description-of-the-workflow" class="nav-link" data-scroll-target="#description-of-the-workflow">Description of the Workflow</a></li>
+  <li><a href="#check-install-required-packages" id="toc-check-install-required-packages" class="nav-link" data-scroll-target="#check-install-required-packages">Check &amp; Install Required Packages</a></li>
+  <li><a href="#set-user-options" id="toc-set-user-options" class="nav-link" data-scroll-target="#set-user-options">Set User Options</a></li>
   <li><a href="#rename-files" id="toc-rename-files" class="nav-link" data-scroll-target="#rename-files">Rename Files</a></li>
   <li><a href="#function-to-calculate-distances-between-image-geo-locations." id="toc-function-to-calculate-distances-between-image-geo-locations." class="nav-link" data-scroll-target="#function-to-calculate-distances-between-image-geo-locations.">Function to calculate distances between image geo-locations.</a></li>
   <li><a href="#call-function-above" id="toc-call-function-above" class="nav-link" data-scroll-target="#call-function-above">Call Function Above</a></li>
   <li><a href="#add-overlays-to-the-images" id="toc-add-overlays-to-the-images" class="nav-link" data-scroll-target="#add-overlays-to-the-images">Add Overlays to the Images</a></li>
-  <li><a href="#generate-kml" id="toc-generate-kml" class="nav-link" data-scroll-target="#generate-kml">Generate KML</a></li>
-  <li><a href="#convert-kml-images-into-a-kmz" id="toc-convert-kml-images-into-a-kmz" class="nav-link" data-scroll-target="#convert-kml-images-into-a-kmz">Convert kml &amp; images into a kmz</a></li>
+  <li><a href="#generate-kml-file" id="toc-generate-kml-file" class="nav-link" data-scroll-target="#generate-kml-file">Generate kml File</a></li>
+  <li><a href="#convert-.kml-images-into-a-.kmz-file" id="toc-convert-.kml-images-into-a-.kmz-file" class="nav-link" data-scroll-target="#convert-.kml-images-into-a-.kmz-file">Convert .kml &amp; Images into a .kmz File</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="goproMaxStills2KmzConverter.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
@@ -152,7 +154,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 28, 2024</p>
+      <p class="date">November 15, 2024</p>
     </div>
   </div>
   
@@ -164,30 +166,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="tldr" class="level2">
+<h2 class="anchored" data-anchor-id="tldr">TL;DR:</h2>
+<p>This workflow creates a .kmz file from geocoded 360° images taken with a GoPro Max. It involves package setup, file renaming, selecting images by distance (20m default), adding overlays (optional), creating a .kml file, then finally converting everything to a .kmz file for use in the <a href="https://cran.r-project.org/web/packages/pannotator/index.html">pannotator</a> package for annotating.</p>
+</section>
 <section id="description-of-the-workflow" class="level2">
 <h2 class="anchored" data-anchor-id="description-of-the-workflow">Description of the Workflow</h2>
-<p>This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images.</p>
-<p>These can be taken with a gopro Max camera or most consumer drones like those made by DJI.</p>
+<p>This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.</p>
 <p>Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.</p>
 <p>Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.</p>
-<p>The workflow is as follows:</p>
+<p>The workflow code below is as follows:</p>
 <ol type="1">
-<li><p>Rename the files</p></li>
-<li><p>Get subset of images a specified distance apart</p></li>
-<li><p>Add overlays to the images</p></li>
+<li><p>Check and install required packages</p></li>
+<li><p>Set user options:</p>
+<p>&gt; folder containing 360 jpegs<br>
+&gt; distance between images<br>
+&gt; add overlays (True/False)<br>
+&gt; overlay file to use (png with transparency)</p></li>
+<li><p>Rename the files (only renames files if names are 12 characters long)</p></li>
+<li><p>Get subset of images a specified distance apart (defaults to 20m)</p></li>
+<li><p>Add overlays to the images (optional)</p></li>
 <li><p>Create a google earth .kml file</p></li>
 <li><p>Convert the kml file and associated images into a single .kmz file</p></li>
 </ol>
-<p>The resulting .kmz file can then be used in the pannotator package for annotating.</p>
+<p>The resulting .kmz file can then be used in the <a href="https://cran.r-project.org/web/packages/pannotator/index.html">pannotator</a> package for annotating.</p>
 </section>
-<section id="check-install-dependent-packages" class="level2">
-<h2 class="anchored" data-anchor-id="check-install-dependent-packages">Check &amp; Install Dependent Packages</h2>
+<section id="check-install-required-packages" class="level2">
+<h2 class="anchored" data-anchor-id="check-install-required-packages">Check &amp; Install Required Packages</h2>
 <p>In order for this workflow to function as expected there are a few dependent packages to install and configure.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dependentPackages <span class="ot">&lt;-</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">c</span>(<span class="st">"tcltk"</span>,</span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">c</span>(<span class="st">"rstudioapi"</span>,</span>
 <span id="cb1-3"><a href="#cb1-3"></a>    <span class="st">"stringr"</span>,</span>
 <span id="cb1-4"><a href="#cb1-4"></a>    <span class="st">"tools"</span>,</span>
 <span id="cb1-5"><a href="#cb1-5"></a>    <span class="st">"exiftoolr"</span>,</span>
@@ -220,6 +231,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 </div>
 </section>
+<section id="set-user-options" class="level2">
+<h2 class="anchored" data-anchor-id="set-user-options">Set User Options</h2>
+<p>Here we set the user options which will be used in the following code chunks</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># Choose the directory path containing 360 images.</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>directory <span class="ot">&lt;-</span> rstudioapi<span class="sc">::</span><span class="fu">selectDirectory</span>(<span class="at">caption =</span> <span class="st">"Select Directory Containing 360 images"</span>, <span class="at">label =</span> <span class="st">"Select"</span>, <span class="at">path =</span> rstudioapi<span class="sc">::</span><span class="fu">getActiveProject</span>())</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># OR</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># add path manually</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co"># directory &lt;- "C:/FolderContaining360Images/"</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co"># Select the minimum distance in metres between each extracted image.</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="co"># For example, set metresBetweenEachImageWanted &lt;- 1 to extract images a minimum of 1 metre apart.</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a></span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="co"># Set to TRUE to add overlays to each image file; or FALSE to use images without any overlays.</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>addOverlays <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a></span>
+<span id="cb2-15"><a href="#cb2-15"></a><span class="co"># Conditionally set the overlay image file if addOverlays is TRUE</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a><span class="cf">if</span> (addOverlays) {</span>
+<span id="cb2-17"><a href="#cb2-17"></a>  <span class="co"># Choose the file for your desired overlay image (PNG image with transparency).</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>  overlayImageFile <span class="ot">&lt;-</span> rstudioapi<span class="sc">::</span><span class="fu">selectFile</span>(<span class="at">caption =</span> <span class="st">"Select overlay file (png)"</span>, <span class="at">label =</span> <span class="st">"Select PNG file"</span>, <span class="at">path =</span> rstudioapi<span class="sc">::</span><span class="fu">getActiveProject</span>(), <span class="at">filter =</span> <span class="st">"png (*.png)"</span>,)</span>
+<span id="cb2-19"><a href="#cb2-19"></a>  <span class="co"># OR</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>  <span class="co"># specify file path manually.</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a>  <span class="co"># overlayImageFile &lt;- "overlay_files/5m_overlay_wedges_straight6.png"</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
 <section id="rename-files" class="level2">
 <h2 class="anchored" data-anchor-id="rename-files">Rename Files</h2>
 <p>By default most consumer cameras like the gopro max &amp; DJI drones don’t allow the user to specify the file names they apply to images that they create.</p>
@@ -231,148 +273,146 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(tcltk)</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(exiftoolr)</span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">library</span>(stringr)</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">library</span>(tools)</span>
-<span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="co">#This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>directory <span class="ot">&lt;-</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">"gopro_images"</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#OR</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="co">#directory &lt;- "C:/FolderToUse/"</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a><span class="co">#file_extension &lt;- "\\.JPG$"</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a></span>
-<span id="cb2-14"><a href="#cb2-14"></a>my_files <span class="ot">&lt;-</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    directory,</span>
-<span id="cb2-17"><a href="#cb2-17"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(<span class="st">"*"</span>, file_extension),</span>
-<span id="cb2-18"><a href="#cb2-18"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb2-19"><a href="#cb2-19"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>  )</span>
-<span id="cb2-21"><a href="#cb2-21"></a></span>
-<span id="cb2-22"><a href="#cb2-22"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
-<span id="cb2-23"><a href="#cb2-23"></a>files_df <span class="ot">&lt;-</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
-<span id="cb2-25"><a href="#cb2-25"></a></span>
-<span id="cb2-26"><a href="#cb2-26"></a><span class="co">#Loop through the files and check to change files names</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
-<span id="cb2-29"><a href="#cb2-29"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
-<span id="cb2-30"><a href="#cb2-30"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(files_df[i, <span class="st">"System:FileName"</span>]) <span class="sc">==</span> <span class="dv">12</span>) {</span>
-<span id="cb2-31"><a href="#cb2-31"></a>    <span class="fu">print</span>(<span class="st">"File appears to be 12 characters long"</span>)</span>
-<span id="cb2-32"><a href="#cb2-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
-<span id="cb2-33"><a href="#cb2-33"></a>    origFullFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"SourceFile"</span>])</span>
-<span id="cb2-34"><a href="#cb2-34"></a>    createDate <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"ExifIFD:DateTimeOriginal"</span>])</span>
-<span id="cb2-35"><a href="#cb2-35"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"CreateDate: "</span>, createDate))</span>
-<span id="cb2-36"><a href="#cb2-36"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(createDate, <span class="st">":"</span>, <span class="st">""</span>)</span>
-<span id="cb2-37"><a href="#cb2-37"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(formattedCreateDate, <span class="st">" "</span>, <span class="st">"_"</span>)</span>
-<span id="cb2-38"><a href="#cb2-38"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"formattedCreateDate: "</span>, formattedCreateDate))</span>
-<span id="cb2-39"><a href="#cb2-39"></a>    file_ext <span class="ot">&lt;-</span> <span class="fu">tolower</span>(tools<span class="sc">::</span><span class="fu">file_ext</span>(files_df[i, <span class="st">"System:FileName"</span>]))</span>
-<span id="cb2-40"><a href="#cb2-40"></a>    newFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"System:Directory"</span>], <span class="st">"/"</span>, formattedCreateDate,<span class="st">"_"</span>,tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(<span class="fu">basename</span>(files_df[i, <span class="st">"System:FileName"</span>])), <span class="st">"."</span>,file_ext)</span>
-<span id="cb2-41"><a href="#cb2-41"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"newFileName: "</span>, newFileName))</span>
-<span id="cb2-42"><a href="#cb2-42"></a>    <span class="fu">file.rename</span>(<span class="at">from =</span> origFullFileName, <span class="at">to =</span> newFileName)</span>
-<span id="cb2-43"><a href="#cb2-43"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
-<span id="cb2-44"><a href="#cb2-44"></a>  } <span class="cf">else</span> {</span>
-<span id="cb2-45"><a href="#cb2-45"></a>    <span class="fu">print</span>(</span>
-<span id="cb2-46"><a href="#cb2-46"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
-<span id="cb2-47"><a href="#cb2-47"></a>    )</span>
-<span id="cb2-48"><a href="#cb2-48"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
-<span id="cb2-49"><a href="#cb2-49"></a>  }</span>
-<span id="cb2-50"><a href="#cb2-50"></a>  </span>
-<span id="cb2-51"><a href="#cb2-51"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(exiftoolr)</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">library</span>(tools)</span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>) <span class="sc">||</span> <span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(directory))) {</span>
+<span id="cb3-7"><a href="#cb3-7"></a>  <span class="fu">stop</span>(<span class="st">"'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."</span>)</span>
+<span id="cb3-8"><a href="#cb3-8"></a>}</span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co"># filter only .jpg or .JPG files</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    directory,</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(<span class="st">"*"</span>, file_extension),</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>  )</span>
+<span id="cb3-20"><a href="#cb3-20"></a></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="co">#read the exif information in the file to get the creation date</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a>files_df <span class="ot">&lt;-</span> exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb3-23"><a href="#cb3-23"></a></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="co">#Loop through the files and check to change files names</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a><span class="co">#this checks if the files have already been changed by looking at the length of the file name.</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(files_df)) {</span>
+<span id="cb3-27"><a href="#cb3-27"></a>  <span class="fu">print</span>(<span class="st">"Checking if camera file name has not been changed"</span>)</span>
+<span id="cb3-28"><a href="#cb3-28"></a>  <span class="cf">if</span> (<span class="fu">nchar</span>(files_df[i, <span class="st">"System:FileName"</span>]) <span class="sc">==</span> <span class="dv">12</span>) {</span>
+<span id="cb3-29"><a href="#cb3-29"></a>    <span class="fu">print</span>(<span class="st">"File appears to be 12 characters long"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb3-31"><a href="#cb3-31"></a>    origFullFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"SourceFile"</span>])</span>
+<span id="cb3-32"><a href="#cb3-32"></a>    createDate <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"ExifIFD:DateTimeOriginal"</span>])</span>
+<span id="cb3-33"><a href="#cb3-33"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"CreateDate: "</span>, createDate))</span>
+<span id="cb3-34"><a href="#cb3-34"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(createDate, <span class="st">":"</span>, <span class="st">""</span>)</span>
+<span id="cb3-35"><a href="#cb3-35"></a>    formattedCreateDate <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(formattedCreateDate, <span class="st">" "</span>, <span class="st">"_"</span>)</span>
+<span id="cb3-36"><a href="#cb3-36"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"formattedCreateDate: "</span>, formattedCreateDate))</span>
+<span id="cb3-37"><a href="#cb3-37"></a>    file_ext <span class="ot">&lt;-</span> <span class="fu">tolower</span>(tools<span class="sc">::</span><span class="fu">file_ext</span>(files_df[i, <span class="st">"System:FileName"</span>]))</span>
+<span id="cb3-38"><a href="#cb3-38"></a>    newFileName <span class="ot">&lt;-</span> <span class="fu">paste0</span>(files_df[i, <span class="st">"System:Directory"</span>], <span class="st">"/"</span>, formattedCreateDate,<span class="st">"_"</span>,tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(<span class="fu">basename</span>(files_df[i, <span class="st">"System:FileName"</span>])), <span class="st">"."</span>,file_ext)</span>
+<span id="cb3-39"><a href="#cb3-39"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"newFileName: "</span>, newFileName))</span>
+<span id="cb3-40"><a href="#cb3-40"></a>    <span class="fu">file.rename</span>(<span class="at">from =</span> origFullFileName, <span class="at">to =</span> newFileName)</span>
+<span id="cb3-41"><a href="#cb3-41"></a>    <span class="fu">print</span>(<span class="st">"File name changed"</span>)</span>
+<span id="cb3-42"><a href="#cb3-42"></a>  } <span class="cf">else</span> {</span>
+<span id="cb3-43"><a href="#cb3-43"></a>    <span class="fu">print</span>(</span>
+<span id="cb3-44"><a href="#cb3-44"></a>      <span class="st">"It appears that the files have already been renamed as it's greater than 12 characters long"</span></span>
+<span id="cb3-45"><a href="#cb3-45"></a>    )</span>
+<span id="cb3-46"><a href="#cb3-46"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"SourceFile: "</span>, files_df[i, <span class="st">"SourceFile"</span>]))</span>
+<span id="cb3-47"><a href="#cb3-47"></a>  }</span>
+<span id="cb3-48"><a href="#cb3-48"></a>  </span>
+<span id="cb3-49"><a href="#cb3-49"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 <section id="function-to-calculate-distances-between-image-geo-locations." class="level2">
 <h2 class="anchored" data-anchor-id="function-to-calculate-distances-between-image-geo-locations.">Function to calculate distances between image geo-locations.</h2>
-<p>This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling.</p>
+<p>This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough..</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(geosphere)</span>
-<span id="cb3-2"><a href="#cb3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">20</span>)</span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="fu">options</span>(<span class="at">digits.secs =</span> <span class="dv">20</span>)</span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">9999</span>)</span>
-<span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#function which takes 2 arguments</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#1:gpx_locations - a dataframe containing 4 columns("SourceFile", "System:Directory", "Composite:GPSLongitude", "Composite:GPSLatitude")</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#2:distance in metres between each image to extract. (default=50m)</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a>findImagesEveryXmetres <span class="ot">&lt;-</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>  <span class="cf">function</span>(my_gpx_locs, <span class="at">metresToNextImage =</span> <span class="dv">50</span>) {</span>
-<span id="cb3-12"><a href="#cb3-12"></a>    gpx_locs <span class="ot">&lt;-</span> my_gpx_locs</span>
-<span id="cb3-13"><a href="#cb3-13"></a>    </span>
-<span id="cb3-14"><a href="#cb3-14"></a>    keeps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Composite:GPSLongitude"</span>, <span class="st">"Composite:GPSLatitude"</span>)</span>
-<span id="cb3-15"><a href="#cb3-15"></a>    points <span class="ot">&lt;-</span> gpx_locs[keeps]</span>
-<span id="cb3-16"><a href="#cb3-16"></a>    </span>
-<span id="cb3-17"><a href="#cb3-17"></a>    <span class="co">#View(points)</span></span>
-<span id="cb3-18"><a href="#cb3-18"></a>    <span class="co">#View(gpx_locs)</span></span>
-<span id="cb3-19"><a href="#cb3-19"></a>    </span>
-<span id="cb3-20"><a href="#cb3-20"></a>    <span class="co">#calculate the distance between any two points</span></span>
-<span id="cb3-21"><a href="#cb3-21"></a>    distance_m <span class="ot">&lt;-</span> geosphere<span class="sc">::</span><span class="fu">distm</span>(points , <span class="at">fun =</span> geosphere<span class="sc">::</span>distHaversine)</span>
-<span id="cb3-22"><a href="#cb3-22"></a>    <span class="fu">rownames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
-<span id="cb3-23"><a href="#cb3-23"></a>    <span class="fu">colnames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
-<span id="cb3-24"><a href="#cb3-24"></a>    </span>
-<span id="cb3-25"><a href="#cb3-25"></a>    <span class="co">#View(distance_m)</span></span>
-<span id="cb3-26"><a href="#cb3-26"></a>    </span>
-<span id="cb3-27"><a href="#cb3-27"></a>    <span class="co">#find images a certain distance apart.</span></span>
-<span id="cb3-28"><a href="#cb3-28"></a>    selected_files <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb3-29"><a href="#cb3-29"></a>    </span>
-<span id="cb3-30"><a href="#cb3-30"></a>    metres_between_images <span class="ot">&lt;-</span> metresToNextImage</span>
-<span id="cb3-31"><a href="#cb3-31"></a>    </span>
-<span id="cb3-32"><a href="#cb3-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
-<span id="cb3-33"><a href="#cb3-33"></a>      <span class="st">"Searching for images apart by: "</span>,</span>
-<span id="cb3-34"><a href="#cb3-34"></a>      metres_between_images,</span>
-<span id="cb3-35"><a href="#cb3-35"></a>      <span class="st">" metres"</span></span>
-<span id="cb3-36"><a href="#cb3-36"></a>    ))</span>
-<span id="cb3-37"><a href="#cb3-37"></a>    </span>
-<span id="cb3-38"><a href="#cb3-38"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(distance_m)) {</span>
-<span id="cb3-39"><a href="#cb3-39"></a>      <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">1</span>) {</span>
-<span id="cb3-40"><a href="#cb3-40"></a>        <span class="co">#if it is the first frame add it as the current frame</span></span>
-<span id="cb3-41"><a href="#cb3-41"></a>        selected_files <span class="ot">&lt;-</span></span>
-<span id="cb3-42"><a href="#cb3-42"></a>          <span class="fu">append</span>(selected_files, <span class="fu">rownames</span>(distance_m)[i])</span>
-<span id="cb3-43"><a href="#cb3-43"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
-<span id="cb3-44"><a href="#cb3-44"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Frame 1: "</span>, current_frame))</span>
-<span id="cb3-45"><a href="#cb3-45"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
-<span id="cb3-46"><a href="#cb3-46"></a>          <span class="st">"looking for frame &gt;"</span>,</span>
-<span id="cb3-47"><a href="#cb3-47"></a>          metres_between_images ,</span>
-<span id="cb3-48"><a href="#cb3-48"></a>          <span class="st">" Metres from frame 1"</span></span>
-<span id="cb3-49"><a href="#cb3-49"></a>        ))</span>
-<span id="cb3-50"><a href="#cb3-50"></a>      }<span class="co">#if the current frame is greater than the specified metres</span></span>
-<span id="cb3-51"><a href="#cb3-51"></a>      <span class="cf">if</span> ((distance_m[i, current_frame] <span class="sc">&gt;</span> metres_between_images)) {</span>
-<span id="cb3-52"><a href="#cb3-52"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
-<span id="cb3-53"><a href="#cb3-53"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"current_frame: "</span>, current_frame))</span>
-<span id="cb3-54"><a href="#cb3-54"></a>        selected_files <span class="ot">&lt;-</span> <span class="fu">append</span>(selected_files, current_frame)</span>
-<span id="cb3-55"><a href="#cb3-55"></a>      }</span>
-<span id="cb3-56"><a href="#cb3-56"></a>      </span>
-<span id="cb3-57"><a href="#cb3-57"></a>    }</span>
-<span id="cb3-58"><a href="#cb3-58"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Files found:"</span>, selected_files))</span>
-<span id="cb3-59"><a href="#cb3-59"></a>    </span>
-<span id="cb3-60"><a href="#cb3-60"></a>    new_folder <span class="ot">&lt;-</span></span>
-<span id="cb3-61"><a href="#cb3-61"></a>      <span class="fu">paste0</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>], <span class="st">"_Frames_"</span>, metres_between_images, <span class="st">"m_apart"</span>)</span>
-<span id="cb3-62"><a href="#cb3-62"></a>    </span>
-<span id="cb3-63"><a href="#cb3-63"></a>    <span class="fu">dir.create</span>(new_folder)</span>
-<span id="cb3-64"><a href="#cb3-64"></a>    </span>
-<span id="cb3-65"><a href="#cb3-65"></a>    source_folder <span class="ot">&lt;-</span>  <span class="fu">dirname</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"SourceFile"</span>])</span>
-<span id="cb3-66"><a href="#cb3-66"></a>    </span>
-<span id="cb3-67"><a href="#cb3-67"></a>    <span class="fu">print</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>])</span>
-<span id="cb3-68"><a href="#cb3-68"></a>    </span>
-<span id="cb3-69"><a href="#cb3-69"></a>    <span class="cf">for</span> (q <span class="cf">in</span> selected_files) {</span>
-<span id="cb3-70"><a href="#cb3-70"></a>      file_to_copy <span class="ot">&lt;-</span> <span class="fu">paste0</span>(source_folder, <span class="st">"/"</span>, q)</span>
-<span id="cb3-71"><a href="#cb3-71"></a>      destination <span class="ot">&lt;-</span> <span class="fu">paste0</span>(new_folder,  <span class="st">"/"</span>, q)</span>
-<span id="cb3-72"><a href="#cb3-72"></a>      <span class="fu">file.copy</span>(</span>
-<span id="cb3-73"><a href="#cb3-73"></a>        file_to_copy,</span>
-<span id="cb3-74"><a href="#cb3-74"></a>        destination,</span>
-<span id="cb3-75"><a href="#cb3-75"></a>        <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-76"><a href="#cb3-76"></a>        <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb3-77"><a href="#cb3-77"></a>        <span class="at">copy.mode =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-78"><a href="#cb3-78"></a>        <span class="at">copy.date =</span> <span class="cn">TRUE</span></span>
-<span id="cb3-79"><a href="#cb3-79"></a>      )</span>
-<span id="cb3-80"><a href="#cb3-80"></a>    }</span>
-<span id="cb3-81"><a href="#cb3-81"></a>    </span>
-<span id="cb3-82"><a href="#cb3-82"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(geosphere)</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">20</span>)</span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="fu">options</span>(<span class="at">digits.secs =</span> <span class="dv">20</span>)</span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">9999</span>)</span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co">#function which takes 2 arguments</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">#1:gpx_locations - a dataframe containing 4 columns("SourceFile", "System:Directory", "Composite:GPSLongitude", "Composite:GPSLatitude")</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">#2:distance in metres between each image to extract. (default=20m)</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a>findImagesEveryXmetres <span class="ot">&lt;-</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>  <span class="cf">function</span>(my_gpx_locs, <span class="at">metresToNextImage =</span> <span class="dv">20</span>) {</span>
+<span id="cb4-12"><a href="#cb4-12"></a>    gpx_locs <span class="ot">&lt;-</span> my_gpx_locs</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    </span>
+<span id="cb4-14"><a href="#cb4-14"></a>    keeps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Composite:GPSLongitude"</span>, <span class="st">"Composite:GPSLatitude"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15"></a>    points <span class="ot">&lt;-</span> gpx_locs[keeps]</span>
+<span id="cb4-16"><a href="#cb4-16"></a>    </span>
+<span id="cb4-17"><a href="#cb4-17"></a>    <span class="co">#View(points)</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>    <span class="co">#View(gpx_locs)</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a>    </span>
+<span id="cb4-20"><a href="#cb4-20"></a>    <span class="co">#calculate the distance between any two points</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a>    distance_m <span class="ot">&lt;-</span> geosphere<span class="sc">::</span><span class="fu">distm</span>(points , <span class="at">fun =</span> geosphere<span class="sc">::</span>distHaversine)</span>
+<span id="cb4-22"><a href="#cb4-22"></a>    <span class="fu">rownames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
+<span id="cb4-23"><a href="#cb4-23"></a>    <span class="fu">colnames</span>(distance_m) <span class="ot">&lt;-</span> <span class="fu">basename</span>(gpx_locs[, <span class="st">"SourceFile"</span>])</span>
+<span id="cb4-24"><a href="#cb4-24"></a>    </span>
+<span id="cb4-25"><a href="#cb4-25"></a>    <span class="co">#View(distance_m)</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a>    </span>
+<span id="cb4-27"><a href="#cb4-27"></a>    <span class="co">#find images a certain distance apart.</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a>    selected_files <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
+<span id="cb4-29"><a href="#cb4-29"></a>    </span>
+<span id="cb4-30"><a href="#cb4-30"></a>    metres_between_images <span class="ot">&lt;-</span> metresToNextImage</span>
+<span id="cb4-31"><a href="#cb4-31"></a>    </span>
+<span id="cb4-32"><a href="#cb4-32"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
+<span id="cb4-33"><a href="#cb4-33"></a>      <span class="st">"Searching for images apart by: "</span>,</span>
+<span id="cb4-34"><a href="#cb4-34"></a>      metres_between_images,</span>
+<span id="cb4-35"><a href="#cb4-35"></a>      <span class="st">" metres"</span></span>
+<span id="cb4-36"><a href="#cb4-36"></a>    ))</span>
+<span id="cb4-37"><a href="#cb4-37"></a>    </span>
+<span id="cb4-38"><a href="#cb4-38"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(distance_m)) {</span>
+<span id="cb4-39"><a href="#cb4-39"></a>      <span class="cf">if</span> (i <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb4-40"><a href="#cb4-40"></a>        <span class="co">#if it is the first frame add it as the current frame</span></span>
+<span id="cb4-41"><a href="#cb4-41"></a>        selected_files <span class="ot">&lt;-</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a>          <span class="fu">append</span>(selected_files, <span class="fu">rownames</span>(distance_m)[i])</span>
+<span id="cb4-43"><a href="#cb4-43"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
+<span id="cb4-44"><a href="#cb4-44"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Frame 1: "</span>, current_frame))</span>
+<span id="cb4-45"><a href="#cb4-45"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(</span>
+<span id="cb4-46"><a href="#cb4-46"></a>          <span class="st">"looking for frame &gt;"</span>,</span>
+<span id="cb4-47"><a href="#cb4-47"></a>          metres_between_images ,</span>
+<span id="cb4-48"><a href="#cb4-48"></a>          <span class="st">" Metres from frame 1"</span></span>
+<span id="cb4-49"><a href="#cb4-49"></a>        ))</span>
+<span id="cb4-50"><a href="#cb4-50"></a>      }<span class="co">#if the current frame is greater than the specified metres</span></span>
+<span id="cb4-51"><a href="#cb4-51"></a>      <span class="cf">if</span> ((distance_m[i, current_frame] <span class="sc">&gt;</span> metres_between_images)) {</span>
+<span id="cb4-52"><a href="#cb4-52"></a>        current_frame <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distance_m)[i]</span>
+<span id="cb4-53"><a href="#cb4-53"></a>        <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"current_frame: "</span>, current_frame))</span>
+<span id="cb4-54"><a href="#cb4-54"></a>        selected_files <span class="ot">&lt;-</span> <span class="fu">append</span>(selected_files, current_frame)</span>
+<span id="cb4-55"><a href="#cb4-55"></a>      }</span>
+<span id="cb4-56"><a href="#cb4-56"></a>      </span>
+<span id="cb4-57"><a href="#cb4-57"></a>    }</span>
+<span id="cb4-58"><a href="#cb4-58"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Files found:"</span>, selected_files))</span>
+<span id="cb4-59"><a href="#cb4-59"></a>    </span>
+<span id="cb4-60"><a href="#cb4-60"></a>    new_folder <span class="ot">&lt;-</span></span>
+<span id="cb4-61"><a href="#cb4-61"></a>      <span class="fu">paste0</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>], <span class="st">"_Frames_"</span>, metres_between_images, <span class="st">"m_apart"</span>)</span>
+<span id="cb4-62"><a href="#cb4-62"></a>    </span>
+<span id="cb4-63"><a href="#cb4-63"></a>    <span class="fu">dir.create</span>(new_folder)</span>
+<span id="cb4-64"><a href="#cb4-64"></a>    </span>
+<span id="cb4-65"><a href="#cb4-65"></a>    source_folder <span class="ot">&lt;-</span>  <span class="fu">dirname</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"SourceFile"</span>])</span>
+<span id="cb4-66"><a href="#cb4-66"></a>    </span>
+<span id="cb4-67"><a href="#cb4-67"></a>    <span class="fu">print</span>(gpx_locs[<span class="dv">1</span>, <span class="st">"System:Directory"</span>])</span>
+<span id="cb4-68"><a href="#cb4-68"></a>    </span>
+<span id="cb4-69"><a href="#cb4-69"></a>    <span class="cf">for</span> (q <span class="cf">in</span> selected_files) {</span>
+<span id="cb4-70"><a href="#cb4-70"></a>      file_to_copy <span class="ot">&lt;-</span> <span class="fu">paste0</span>(source_folder, <span class="st">"/"</span>, q)</span>
+<span id="cb4-71"><a href="#cb4-71"></a>      destination <span class="ot">&lt;-</span> <span class="fu">paste0</span>(new_folder,  <span class="st">"/"</span>, q)</span>
+<span id="cb4-72"><a href="#cb4-72"></a>      <span class="fu">file.copy</span>(</span>
+<span id="cb4-73"><a href="#cb4-73"></a>        file_to_copy,</span>
+<span id="cb4-74"><a href="#cb4-74"></a>        destination,</span>
+<span id="cb4-75"><a href="#cb4-75"></a>        <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-76"><a href="#cb4-76"></a>        <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-77"><a href="#cb4-77"></a>        <span class="at">copy.mode =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-78"><a href="#cb4-78"></a>        <span class="at">copy.date =</span> <span class="cn">TRUE</span></span>
+<span id="cb4-79"><a href="#cb4-79"></a>      )</span>
+<span id="cb4-80"><a href="#cb4-80"></a>    }</span>
+<span id="cb4-81"><a href="#cb4-81"></a>    </span>
+<span id="cb4-82"><a href="#cb4-82"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -382,42 +422,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(tcltk)</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">library</span>(exiftoolr)</span>
-<span id="cb4-3"><a href="#cb4-3"></a></span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  directory <span class="ot">&lt;-</span></span>
-<span id="cb4-6"><a href="#cb4-6"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7"></a>}</span>
-<span id="cb4-8"><a href="#cb4-8"></a></span>
-<span id="cb4-9"><a href="#cb4-9"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a></span>
-<span id="cb4-11"><a href="#cb4-11"></a>my_files <span class="ot">&lt;-</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb4-13"><a href="#cb4-13"></a>    directory,</span>
-<span id="cb4-14"><a href="#cb4-14"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
-<span id="cb4-15"><a href="#cb4-15"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb4-16"><a href="#cb4-16"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>  )</span>
-<span id="cb4-18"><a href="#cb4-18"></a></span>
-<span id="cb4-19"><a href="#cb4-19"></a>image_files_df <span class="ot">&lt;-</span></span>
-<span id="cb4-20"><a href="#cb4-20"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
-<span id="cb4-21"><a href="#cb4-21"></a></span>
-<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#View(image_files_df)</span></span>
-<span id="cb4-23"><a href="#cb4-23"></a></span>
-<span id="cb4-24"><a href="#cb4-24"></a>gpx_locs <span class="ot">&lt;-</span></span>
-<span id="cb4-25"><a href="#cb4-25"></a>  <span class="fu">as.data.frame</span>(image_files_df[, <span class="fu">c</span>(</span>
-<span id="cb4-26"><a href="#cb4-26"></a>    <span class="st">"SourceFile"</span>,</span>
-<span id="cb4-27"><a href="#cb4-27"></a>    <span class="st">"System:Directory"</span>,</span>
-<span id="cb4-28"><a href="#cb4-28"></a>    <span class="st">"Composite:GPSLatitude"</span>,</span>
-<span id="cb4-29"><a href="#cb4-29"></a>    <span class="st">"Composite:GPSLongitude"</span></span>
-<span id="cb4-30"><a href="#cb4-30"></a>  )])</span>
-<span id="cb4-31"><a href="#cb4-31"></a></span>
-<span id="cb4-32"><a href="#cb4-32"></a><span class="co">#View(gpx_locs)</span></span>
-<span id="cb4-33"><a href="#cb4-33"></a></span>
-<span id="cb4-34"><a href="#cb4-34"></a>metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb4-35"><a href="#cb4-35"></a></span>
-<span id="cb4-36"><a href="#cb4-36"></a><span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">library</span>(exiftoolr)</span>
+<span id="cb5-2"><a href="#cb5-2"></a></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>) <span class="sc">||</span> <span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(directory))) {</span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">stop</span>(<span class="st">"'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."</span>)</span>
+<span id="cb5-6"><a href="#cb5-6"></a>}</span>
+<span id="cb5-7"><a href="#cb5-7"></a></span>
+<span id="cb5-8"><a href="#cb5-8"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a></span>
+<span id="cb5-10"><a href="#cb5-10"></a>my_files <span class="ot">&lt;-</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb5-12"><a href="#cb5-12"></a>    directory,</span>
+<span id="cb5-13"><a href="#cb5-13"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
+<span id="cb5-14"><a href="#cb5-14"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-15"><a href="#cb5-15"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a>  )</span>
+<span id="cb5-17"><a href="#cb5-17"></a></span>
+<span id="cb5-18"><a href="#cb5-18"></a>image_files_df <span class="ot">&lt;-</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a>  exiftoolr<span class="sc">::</span><span class="fu">exif_read</span>(my_files, <span class="at">args =</span> <span class="fu">c</span>(<span class="st">"-G1"</span>, <span class="st">"-a"</span>, <span class="st">"-s"</span>))</span>
+<span id="cb5-20"><a href="#cb5-20"></a></span>
+<span id="cb5-21"><a href="#cb5-21"></a><span class="co">#View(image_files_df)</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a></span>
+<span id="cb5-23"><a href="#cb5-23"></a>gpx_locs <span class="ot">&lt;-</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a>  <span class="fu">as.data.frame</span>(image_files_df[, <span class="fu">c</span>(</span>
+<span id="cb5-25"><a href="#cb5-25"></a>    <span class="st">"SourceFile"</span>,</span>
+<span id="cb5-26"><a href="#cb5-26"></a>    <span class="st">"System:Directory"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27"></a>    <span class="st">"Composite:GPSLatitude"</span>,</span>
+<span id="cb5-28"><a href="#cb5-28"></a>    <span class="st">"Composite:GPSLongitude"</span></span>
+<span id="cb5-29"><a href="#cb5-29"></a>  )])</span>
+<span id="cb5-30"><a href="#cb5-30"></a></span>
+<span id="cb5-31"><a href="#cb5-31"></a><span class="co">#View(gpx_locs)</span></span>
+<span id="cb5-32"><a href="#cb5-32"></a></span>
+<span id="cb5-33"><a href="#cb5-33"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb5-34"><a href="#cb5-34"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb5-35"><a href="#cb5-35"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted"</span>)</span>
+<span id="cb5-36"><a href="#cb5-36"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs)</span>
+<span id="cb5-37"><a href="#cb5-37"></a>} <span class="cf">else</span> {</span>
+<span id="cb5-38"><a href="#cb5-38"></a>  <span class="fu">findImagesEveryXmetres</span>(<span class="at">my_gpx_locs =</span> gpx_locs, <span class="at">metresToNextImage =</span> metresBetweenEachImageWanted)</span>
+<span id="cb5-39"><a href="#cb5-39"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -444,212 +487,269 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">library</span>(magick)</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">library</span>(tools)</span>
-<span id="cb5-3"><a href="#cb5-3"></a></span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
-<span id="cb5-5"><a href="#cb5-5"></a>  directory <span class="ot">&lt;-</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb5-7"><a href="#cb5-7"></a>  <span class="co">#OR</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>}</span>
-<span id="cb5-10"><a href="#cb5-10"></a></span>
-<span id="cb5-11"><a href="#cb5-11"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
-<span id="cb5-13"><a href="#cb5-13"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">50</span></span>
-<span id="cb5-14"><a href="#cb5-14"></a>}</span>
-<span id="cb5-15"><a href="#cb5-15"></a></span>
-<span id="cb5-16"><a href="#cb5-16"></a><span class="co"># if it doesn't exist then thorw up a dialog to select the overlay file to use</span></span>
-<span id="cb5-17"><a href="#cb5-17"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"overlay_file"</span>)) {</span>
-<span id="cb5-18"><a href="#cb5-18"></a>  overlay_file <span class="ot">&lt;-</span>  tcltk<span class="sc">::</span><span class="fu">tk_choose.files</span>(<span class="at">default=</span> <span class="st">"./overlay_files/5m_overlay_wedges_straight6.png"</span>, <span class="at">caption =</span> <span class="st">"Select the overlay .png to use"</span>, <span class="at">multi=</span><span class="cn">FALSE</span>)</span>
-<span id="cb5-19"><a href="#cb5-19"></a>}</span>
-<span id="cb5-20"><a href="#cb5-20"></a></span>
-<span id="cb5-21"><a href="#cb5-21"></a>new_directory <span class="ot">&lt;-</span></span>
-<span id="cb5-22"><a href="#cb5-22"></a>  <span class="fu">paste0</span>(directory,</span>
-<span id="cb5-23"><a href="#cb5-23"></a>         <span class="st">"_Frames_"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24"></a>         metresBetweenEachImageWanted,</span>
-<span id="cb5-25"><a href="#cb5-25"></a>         <span class="st">"m_apart"</span>)</span>
-<span id="cb5-26"><a href="#cb5-26"></a></span>
-<span id="cb5-27"><a href="#cb5-27"></a>file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.jpg$"</span></span>
-<span id="cb5-28"><a href="#cb5-28"></a></span>
-<span id="cb5-29"><a href="#cb5-29"></a>files_lst <span class="ot">&lt;-</span></span>
-<span id="cb5-30"><a href="#cb5-30"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb5-31"><a href="#cb5-31"></a>    new_directory,</span>
-<span id="cb5-32"><a href="#cb5-32"></a>    <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
-<span id="cb5-33"><a href="#cb5-33"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb5-34"><a href="#cb5-34"></a>    <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb5-35"><a href="#cb5-35"></a>    <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb5-36"><a href="#cb5-36"></a>    <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
-<span id="cb5-37"><a href="#cb5-37"></a>  )</span>
-<span id="cb5-38"><a href="#cb5-38"></a></span>
-<span id="cb5-39"><a href="#cb5-39"></a><span class="co"># first create a new directory to add the overlay images to</span></span>
-<span id="cb5-40"><a href="#cb5-40"></a><span class="fu">dir.create</span>(<span class="fu">paste0</span>(new_directory, <span class="st">"/with_overlay/"</span>))</span>
-<span id="cb5-41"><a href="#cb5-41"></a></span>
-<span id="cb5-42"><a href="#cb5-42"></a><span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(files_lst)) {</span>
-<span id="cb5-43"><a href="#cb5-43"></a>  background_image <span class="ot">&lt;-</span> magick<span class="sc">::</span><span class="fu">image_read</span>(files_lst[t])</span>
-<span id="cb5-44"><a href="#cb5-44"></a>  overlay <span class="ot">&lt;-</span></span>
-<span id="cb5-45"><a href="#cb5-45"></a>    magick<span class="sc">::</span><span class="fu">image_read</span>(overlay_file)</span>
-<span id="cb5-46"><a href="#cb5-46"></a>  image_dir <span class="ot">&lt;-</span> <span class="fu">dirname</span>(files_lst[t])</span>
-<span id="cb5-47"><a href="#cb5-47"></a>  overlay_image_dir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(image_dir, <span class="st">"/with_overlay/"</span>)</span>
-<span id="cb5-48"><a href="#cb5-48"></a>  new_filename <span class="ot">&lt;-</span></span>
-<span id="cb5-49"><a href="#cb5-49"></a>    <span class="fu">paste0</span>(overlay_image_dir,</span>
-<span id="cb5-50"><a href="#cb5-50"></a>           <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(files_lst[t])),</span>
-<span id="cb5-51"><a href="#cb5-51"></a>           <span class="st">"_with_overlay.jpg"</span>)</span>
-<span id="cb5-52"><a href="#cb5-52"></a>  <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Adding Overlay to create: "</span>, new_filename))</span>
-<span id="cb5-53"><a href="#cb5-53"></a>  img <span class="ot">&lt;-</span> <span class="fu">c</span>(background_image, overlay) <span class="sc">%&gt;%</span></span>
-<span id="cb5-54"><a href="#cb5-54"></a>    magick<span class="sc">::</span><span class="fu">image_flatten</span>(.) <span class="sc">%&gt;%</span></span>
-<span id="cb5-55"><a href="#cb5-55"></a>    magick<span class="sc">::</span><span class="fu">image_write</span>(., new_filename, <span class="at">format =</span> <span class="st">"jpg"</span>)</span>
-<span id="cb5-56"><a href="#cb5-56"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">library</span>(magick)</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="fu">library</span>(tools)</span>
+<span id="cb6-3"><a href="#cb6-3"></a></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>) <span class="sc">||</span> <span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(directory))) {</span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="fu">stop</span>(<span class="st">"'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>  )</span>
+<span id="cb6-8"><a href="#cb6-8"></a>}</span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb6-12"><a href="#cb6-12"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a>  )</span>
+<span id="cb6-14"><a href="#cb6-14"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a>}</span>
+<span id="cb6-16"><a href="#cb6-16"></a></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co"># if it doesn't exist then throw up a dialog to select the overlay</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"addOverlays"</span>)) {</span>
+<span id="cb6-19"><a href="#cb6-19"></a>  <span class="fu">stop</span>(<span class="st">"'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays."</span>)</span>
+<span id="cb6-20"><a href="#cb6-20"></a>}</span>
+<span id="cb6-21"><a href="#cb6-21"></a></span>
+<span id="cb6-22"><a href="#cb6-22"></a><span class="cf">if</span> (addOverlays <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb6-23"><a href="#cb6-23"></a>  overlay_file <span class="ot">&lt;-</span> overlayImageFile</span>
+<span id="cb6-24"><a href="#cb6-24"></a>  </span>
+<span id="cb6-25"><a href="#cb6-25"></a>  new_directory <span class="ot">&lt;-</span>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb6-26"><a href="#cb6-26"></a>                           <span class="st">"_Frames_"</span>,</span>
+<span id="cb6-27"><a href="#cb6-27"></a>                           metresBetweenEachImageWanted,</span>
+<span id="cb6-28"><a href="#cb6-28"></a>                           <span class="st">"m_apart"</span>)</span>
+<span id="cb6-29"><a href="#cb6-29"></a>  </span>
+<span id="cb6-30"><a href="#cb6-30"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(new_directory))) {</span>
+<span id="cb6-31"><a href="#cb6-31"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(new_directory, <span class="st">" does not exist!"</span>))</span>
+<span id="cb6-32"><a href="#cb6-32"></a>  <span class="fu">stop</span>(<span class="st">"Did you run the code chunk above to find images a certain distance apart?"</span></span>
+<span id="cb6-33"><a href="#cb6-33"></a>  )</span>
+<span id="cb6-34"><a href="#cb6-34"></a>}</span>
+<span id="cb6-35"><a href="#cb6-35"></a>  <span class="co"># first create a new directory to add the overlay images to</span></span>
+<span id="cb6-36"><a href="#cb6-36"></a>  <span class="fu">dir.create</span>(<span class="fu">paste0</span>(new_directory, <span class="st">"/with_overlay/"</span>))</span>
+<span id="cb6-37"><a href="#cb6-37"></a>  </span>
+<span id="cb6-38"><a href="#cb6-38"></a>  file_extension <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.[Jj][Pp][Gg]$"</span></span>
+<span id="cb6-39"><a href="#cb6-39"></a>  </span>
+<span id="cb6-40"><a href="#cb6-40"></a>  files_lst <span class="ot">&lt;-</span></span>
+<span id="cb6-41"><a href="#cb6-41"></a>    <span class="fu">list.files</span>(</span>
+<span id="cb6-42"><a href="#cb6-42"></a>      new_directory,</span>
+<span id="cb6-43"><a href="#cb6-43"></a>      <span class="at">pattern =</span> <span class="fu">paste0</span>(file_extension),</span>
+<span id="cb6-44"><a href="#cb6-44"></a>      <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-45"><a href="#cb6-45"></a>      <span class="at">full.names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-46"><a href="#cb6-46"></a>      <span class="at">recursive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-47"><a href="#cb6-47"></a>      <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-48"><a href="#cb6-48"></a>    )</span>
+<span id="cb6-49"><a href="#cb6-49"></a>  </span>
+<span id="cb6-50"><a href="#cb6-50"></a>  </span>
+<span id="cb6-51"><a href="#cb6-51"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(files_lst)) {</span>
+<span id="cb6-52"><a href="#cb6-52"></a>    background_image <span class="ot">&lt;-</span> magick<span class="sc">::</span><span class="fu">image_read</span>(files_lst[t])</span>
+<span id="cb6-53"><a href="#cb6-53"></a>    overlay <span class="ot">&lt;-</span></span>
+<span id="cb6-54"><a href="#cb6-54"></a>      magick<span class="sc">::</span><span class="fu">image_read</span>(overlay_file)</span>
+<span id="cb6-55"><a href="#cb6-55"></a>    image_dir <span class="ot">&lt;-</span> <span class="fu">dirname</span>(files_lst[t])</span>
+<span id="cb6-56"><a href="#cb6-56"></a>    overlay_image_dir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(image_dir, <span class="st">"/with_overlay/"</span>)</span>
+<span id="cb6-57"><a href="#cb6-57"></a>    new_filename <span class="ot">&lt;-</span></span>
+<span id="cb6-58"><a href="#cb6-58"></a>      <span class="fu">paste0</span>(overlay_image_dir,</span>
+<span id="cb6-59"><a href="#cb6-59"></a>             <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(files_lst[t])),</span>
+<span id="cb6-60"><a href="#cb6-60"></a>             <span class="st">"_with_overlay.jpg"</span>)</span>
+<span id="cb6-61"><a href="#cb6-61"></a>    <span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"Adding overlay to create: "</span>, new_filename))</span>
+<span id="cb6-62"><a href="#cb6-62"></a>    img <span class="ot">&lt;-</span> <span class="fu">c</span>(background_image, overlay) <span class="sc">%&gt;%</span></span>
+<span id="cb6-63"><a href="#cb6-63"></a>      magick<span class="sc">::</span><span class="fu">image_flatten</span>(.) <span class="sc">%&gt;%</span></span>
+<span id="cb6-64"><a href="#cb6-64"></a>      magick<span class="sc">::</span><span class="fu">image_write</span>(., new_filename, <span class="at">format =</span> <span class="st">"jpg"</span>)</span>
+<span id="cb6-65"><a href="#cb6-65"></a>  }</span>
+<span id="cb6-66"><a href="#cb6-66"></a>  </span>
+<span id="cb6-67"><a href="#cb6-67"></a>} <span class="cf">else</span> {</span>
+<span id="cb6-68"><a href="#cb6-68"></a>  <span class="fu">print</span>(<span class="st">"'addOverlays' not TRUE: No overlay files generated"</span>)</span>
+<span id="cb6-69"><a href="#cb6-69"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="generate-kml" class="level2">
-<h2 class="anchored" data-anchor-id="generate-kml">Generate KML</h2>
+<section id="generate-kml-file" class="level2">
+<h2 class="anchored" data-anchor-id="generate-kml-file">Generate kml File</h2>
 <p>This code generates a <a href="https://earth.google.com">google earth</a> kml file linking to the image files in the folder generated above. It uses <a href="https://exiftool.org/">ExifTool</a> with a template “kml_hide_rollover.fmt” to create the kml file.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  directory <span class="ot">&lt;-</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb6-4"><a href="#cb6-4"></a>  <span class="co">#OR</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>}</span>
-<span id="cb6-7"><a href="#cb6-7"></a></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
-<span id="cb6-10"><a href="#cb6-10"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">50</span></span>
-<span id="cb6-11"><a href="#cb6-11"></a>}</span>
-<span id="cb6-12"><a href="#cb6-12"></a></span>
-<span id="cb6-13"><a href="#cb6-13"></a>new_directory <span class="ot">&lt;-</span></span>
-<span id="cb6-14"><a href="#cb6-14"></a>  <span class="fu">paste0</span>(directory,</span>
-<span id="cb6-15"><a href="#cb6-15"></a>         <span class="st">"_Frames_"</span>,</span>
-<span id="cb6-16"><a href="#cb6-16"></a>         metresBetweenEachImageWanted,</span>
-<span id="cb6-17"><a href="#cb6-17"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18"></a></span>
-<span id="cb6-19"><a href="#cb6-19"></a>output_kml <span class="ot">&lt;-</span></span>
-<span id="cb6-20"><a href="#cb6-20"></a>  <span class="fu">paste0</span>(directory,</span>
-<span id="cb6-21"><a href="#cb6-21"></a>         <span class="st">"_Frames_"</span>,</span>
-<span id="cb6-22"><a href="#cb6-22"></a>         metresBetweenEachImageWanted,</span>
-<span id="cb6-23"><a href="#cb6-23"></a>         <span class="st">"m_apart_with_overlay.kml"</span>)</span>
-<span id="cb6-24"><a href="#cb6-24"></a></span>
-<span id="cb6-25"><a href="#cb6-25"></a>exif_args <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"-p"</span>, <span class="st">"kml_hide_rollover.fmt"</span>, <span class="st">"-r"</span>)</span>
-<span id="cb6-26"><a href="#cb6-26"></a><span class="fu">exif_call</span>(</span>
-<span id="cb6-27"><a href="#cb6-27"></a>  <span class="at">args =</span> exif_args,</span>
-<span id="cb6-28"><a href="#cb6-28"></a>  <span class="at">path =</span> new_directory,</span>
-<span id="cb6-29"><a href="#cb6-29"></a>  <span class="at">stdout =</span> output_kml,</span>
-<span id="cb6-30"><a href="#cb6-30"></a>  <span class="at">quiet =</span> <span class="cn">FALSE</span></span>
-<span id="cb6-31"><a href="#cb6-31"></a>)</span>
-<span id="cb6-32"><a href="#cb6-32"></a></span>
-<span id="cb6-33"><a href="#cb6-33"></a><span class="co"># now fix the links to the images to make them relative.</span></span>
-<span id="cb6-34"><a href="#cb6-34"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(output_kml)</span>
-<span id="cb6-35"><a href="#cb6-35"></a>path_only <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">dirname</span>(output_kml))</span>
-<span id="cb6-36"><a href="#cb6-36"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(path_only, <span class="st">"."</span>, mystring, <span class="at">fixed =</span> T)</span>
-<span id="cb6-37"><a href="#cb6-37"></a></span>
-<span id="cb6-38"><a href="#cb6-38"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(output_kml))</span>
-<span id="cb6-39"><a href="#cb6-39"></a>  <span class="fu">writeLines</span>(mystring2)</span>
-<span id="cb6-40"><a href="#cb6-40"></a><span class="fu">sink</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>) <span class="sc">||</span> <span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(directory))) {</span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">stop</span>(<span class="st">"'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  )</span>
+<span id="cb7-5"><a href="#cb7-5"></a>}</span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  )</span>
+<span id="cb7-11"><a href="#cb7-11"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13"></a></span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="cf">if</span> (addOverlays <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb7-15"><a href="#cb7-15"></a></span>
+<span id="cb7-16"><a href="#cb7-16"></a>new_directory <span class="ot">&lt;-</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-18"><a href="#cb7-18"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-19"><a href="#cb7-19"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-20"><a href="#cb7-20"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
+<span id="cb7-21"><a href="#cb7-21"></a></span>
+<span id="cb7-22"><a href="#cb7-22"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb7-23"><a href="#cb7-23"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-24"><a href="#cb7-24"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-25"><a href="#cb7-25"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-26"><a href="#cb7-26"></a>         <span class="st">"m_apart_with_overlay.kml"</span>)</span>
+<span id="cb7-27"><a href="#cb7-27"></a>} <span class="cf">else</span> <span class="cf">if</span>(addOverlays <span class="sc">==</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb7-28"><a href="#cb7-28"></a>  new_directory <span class="ot">&lt;-</span></span>
+<span id="cb7-29"><a href="#cb7-29"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-30"><a href="#cb7-30"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-31"><a href="#cb7-31"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-32"><a href="#cb7-32"></a>         <span class="st">"m_apart"</span>)</span>
+<span id="cb7-33"><a href="#cb7-33"></a></span>
+<span id="cb7-34"><a href="#cb7-34"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb7-35"><a href="#cb7-35"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb7-36"><a href="#cb7-36"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb7-37"><a href="#cb7-37"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb7-38"><a href="#cb7-38"></a>         <span class="st">"m_apart.kml"</span>)</span>
+<span id="cb7-39"><a href="#cb7-39"></a>}</span>
+<span id="cb7-40"><a href="#cb7-40"></a></span>
+<span id="cb7-41"><a href="#cb7-41"></a>exif_args <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"-p"</span>, <span class="st">"kml_hide_rollover.fmt"</span>, <span class="st">"-r"</span>)</span>
+<span id="cb7-42"><a href="#cb7-42"></a><span class="fu">exif_call</span>(</span>
+<span id="cb7-43"><a href="#cb7-43"></a>  <span class="at">args =</span> exif_args,</span>
+<span id="cb7-44"><a href="#cb7-44"></a>  <span class="at">path =</span> new_directory,</span>
+<span id="cb7-45"><a href="#cb7-45"></a>  <span class="at">stdout =</span> output_kml,</span>
+<span id="cb7-46"><a href="#cb7-46"></a>  <span class="at">quiet =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-47"><a href="#cb7-47"></a>)</span>
+<span id="cb7-48"><a href="#cb7-48"></a></span>
+<span id="cb7-49"><a href="#cb7-49"></a><span class="co"># now fix the links to the images to make them relative.</span></span>
+<span id="cb7-50"><a href="#cb7-50"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(output_kml)</span>
+<span id="cb7-51"><a href="#cb7-51"></a>path_only <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">dirname</span>(output_kml))</span>
+<span id="cb7-52"><a href="#cb7-52"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(path_only, <span class="st">"."</span>, mystring, <span class="at">fixed =</span> T)</span>
+<span id="cb7-53"><a href="#cb7-53"></a></span>
+<span id="cb7-54"><a href="#cb7-54"></a><span class="co"># Write the file out</span></span>
+<span id="cb7-55"><a href="#cb7-55"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(output_kml))</span>
+<span id="cb7-56"><a href="#cb7-56"></a>  <span class="fu">writeLines</span>(mystring2)</span>
+<span id="cb7-57"><a href="#cb7-57"></a><span class="fu">sink</span>()</span>
+<span id="cb7-58"><a href="#cb7-58"></a></span>
+<span id="cb7-59"><a href="#cb7-59"></a><span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">"generated kml file: "</span>, output_kml))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="convert-kml-images-into-a-kmz" class="level2">
-<h2 class="anchored" data-anchor-id="convert-kml-images-into-a-kmz">Convert kml &amp; images into a kmz</h2>
+<section id="convert-.kml-images-into-a-.kmz-file" class="level2">
+<h2 class="anchored" data-anchor-id="convert-.kml-images-into-a-.kmz-file">Convert .kml &amp; Images into a .kmz File</h2>
 <p>This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.</p>
+<p>NOTE: This code can generate kmz files &gt;2GB. these files won’t open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it <a href="https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth">here</a>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">library</span>(zip)</span>
-<span id="cb7-2"><a href="#cb7-2"></a></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>)) {</span>
-<span id="cb7-4"><a href="#cb7-4"></a>  directory <span class="ot">&lt;-</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a>    tcltk<span class="sc">::</span><span class="fu">tk_choose.dir</span>(<span class="at">default =</span> <span class="st">""</span>, <span class="at">caption =</span> <span class="st">"Select directory with files to process"</span>)</span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="co">#OR</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a>  <span class="co">#directory &lt;- "C:/folder_path_to_gopro_files/"</span></span>
-<span id="cb7-8"><a href="#cb7-8"></a>}</span>
-<span id="cb7-9"><a href="#cb7-9"></a></span>
-<span id="cb7-10"><a href="#cb7-10"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
-<span id="cb7-11"><a href="#cb7-11"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb7-12"><a href="#cb7-12"></a>}</span>
-<span id="cb7-13"><a href="#cb7-13"></a></span>
-<span id="cb7-14"><a href="#cb7-14"></a>new_directory <span class="ot">&lt;-</span></span>
-<span id="cb7-15"><a href="#cb7-15"></a>  <span class="fu">paste0</span>(directory,</span>
-<span id="cb7-16"><a href="#cb7-16"></a>         <span class="st">"_Frames_"</span>,</span>
-<span id="cb7-17"><a href="#cb7-17"></a>         metresBetweenEachImageWanted,</span>
-<span id="cb7-18"><a href="#cb7-18"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
-<span id="cb7-19"><a href="#cb7-19"></a></span>
-<span id="cb7-20"><a href="#cb7-20"></a>output_kml <span class="ot">&lt;-</span></span>
-<span id="cb7-21"><a href="#cb7-21"></a>  <span class="fu">paste0</span>(directory,</span>
-<span id="cb7-22"><a href="#cb7-22"></a>         <span class="st">"_Frames_"</span>,</span>
-<span id="cb7-23"><a href="#cb7-23"></a>         metresBetweenEachImageWanted,</span>
-<span id="cb7-24"><a href="#cb7-24"></a>         <span class="st">"m_apart_with_overlay.kml"</span>)</span>
-<span id="cb7-25"><a href="#cb7-25"></a></span>
-<span id="cb7-26"><a href="#cb7-26"></a><span class="fu">print</span>(<span class="st">"Generating kmz file for:"</span>)</span>
-<span id="cb7-27"><a href="#cb7-27"></a><span class="fu">print</span>(output_kml)</span>
-<span id="cb7-28"><a href="#cb7-28"></a></span>
-<span id="cb7-29"><a href="#cb7-29"></a>kml_file_name <span class="ot">&lt;-</span> <span class="fu">basename</span>(output_kml)</span>
-<span id="cb7-30"><a href="#cb7-30"></a>kml_image_directory <span class="ot">&lt;-</span> new_directory</span>
-<span id="cb7-31"><a href="#cb7-31"></a></span>
-<span id="cb7-32"><a href="#cb7-32"></a>dir_to_copy <span class="ot">&lt;-</span> kml_image_directory</span>
-<span id="cb7-33"><a href="#cb7-33"></a>temp_folder <span class="ot">&lt;-</span> <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory), <span class="st">"/temp"</span>)</span>
-<span id="cb7-34"><a href="#cb7-34"></a>new_dir_path <span class="ot">&lt;-</span> <span class="fu">paste0</span>(temp_folder, <span class="st">"/files/"</span>)</span>
-<span id="cb7-35"><a href="#cb7-35"></a>fs<span class="sc">::</span><span class="fu">dir_copy</span>(dir_to_copy, new_dir_path, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-36"><a href="#cb7-36"></a>fs<span class="sc">::</span><span class="fu">file_copy</span>(output_kml, temp_folder, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-37"><a href="#cb7-37"></a><span class="fu">file.rename</span>(</span>
-<span id="cb7-38"><a href="#cb7-38"></a>  <span class="at">from =</span> <span class="fu">file.path</span>(temp_folder, kml_file_name),</span>
-<span id="cb7-39"><a href="#cb7-39"></a>  <span class="at">to =</span> <span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)</span>
-<span id="cb7-40"><a href="#cb7-40"></a>)</span>
-<span id="cb7-41"><a href="#cb7-41"></a></span>
-<span id="cb7-42"><a href="#cb7-42"></a><span class="co">#clean up all of the extra line breaks in the kml file</span></span>
-<span id="cb7-43"><a href="#cb7-43"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>))</span>
-<span id="cb7-44"><a href="#cb7-44"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring, <span class="at">fixed =</span> T)</span>
-<span id="cb7-45"><a href="#cb7-45"></a>mystring3 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring2, <span class="at">fixed =</span> T)</span>
-<span id="cb7-46"><a href="#cb7-46"></a>mystring4 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring3, <span class="at">fixed =</span> T)</span>
-<span id="cb7-47"><a href="#cb7-47"></a>mystring5 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring4, <span class="at">fixed =</span> T)</span>
-<span id="cb7-48"><a href="#cb7-48"></a>mystring6 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\n\r\n</span><span class="st">'</span>, <span class="st">' '</span>, mystring5, <span class="at">fixed =</span> T)</span>
-<span id="cb7-49"><a href="#cb7-49"></a></span>
-<span id="cb7-50"><a href="#cb7-50"></a><span class="co"># Extract the part of the string after the last '/'</span></span>
-<span id="cb7-51"><a href="#cb7-51"></a>last_part_dir <span class="ot">&lt;-</span> <span class="fu">tail</span>(<span class="fu">strsplit</span>(new_directory, <span class="st">"/"</span>)[[<span class="dv">1</span>]], <span class="dv">2</span>)</span>
-<span id="cb7-52"><a href="#cb7-52"></a>mykml <span class="ot">&lt;-</span></span>
-<span id="cb7-53"><a href="#cb7-53"></a>  stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mystring6[<span class="dv">1</span>], <span class="fu">paste0</span>(<span class="st">"src='./"</span>, last_part_dir[<span class="dv">1</span>],<span class="st">"/"</span>, last_part_dir[<span class="dv">2</span>]), <span class="st">"src='files"</span>)</span>
-<span id="cb7-54"><a href="#cb7-54"></a></span>
-<span id="cb7-55"><a href="#cb7-55"></a>mykml <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mykml[<span class="dv">1</span>], <span class="st">"&lt;name&gt;./"</span>, <span class="st">"&lt;name&gt;"</span>)</span>
-<span id="cb7-56"><a href="#cb7-56"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)))</span>
-<span id="cb7-57"><a href="#cb7-57"></a><span class="fu">writeLines</span>(mykml)</span>
-<span id="cb7-58"><a href="#cb7-58"></a><span class="fu">sink</span>()</span>
-<span id="cb7-59"><a href="#cb7-59"></a></span>
-<span id="cb7-60"><a href="#cb7-60"></a><span class="co"># name for new kmz file</span></span>
-<span id="cb7-61"><a href="#cb7-61"></a>kmz_file_name <span class="ot">&lt;-</span></span>
-<span id="cb7-62"><a href="#cb7-62"></a>  <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory),</span>
-<span id="cb7-63"><a href="#cb7-63"></a>         <span class="st">"/"</span>,</span>
-<span id="cb7-64"><a href="#cb7-64"></a>         <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(output_kml)),</span>
-<span id="cb7-65"><a href="#cb7-65"></a>         <span class="st">".kmz"</span>)</span>
-<span id="cb7-66"><a href="#cb7-66"></a></span>
-<span id="cb7-67"><a href="#cb7-67"></a><span class="co"># create the kmz file</span></span>
-<span id="cb7-68"><a href="#cb7-68"></a>myWd <span class="ot">&lt;-</span> temp_folder</span>
-<span id="cb7-69"><a href="#cb7-69"></a>files_lst <span class="ot">&lt;-</span></span>
-<span id="cb7-70"><a href="#cb7-70"></a>  <span class="fu">list.files</span>(</span>
-<span id="cb7-71"><a href="#cb7-71"></a>    <span class="at">path =</span> temp_folder,</span>
-<span id="cb7-72"><a href="#cb7-72"></a>    <span class="at">pattern =</span> <span class="st">"*.jpg|*.kml"</span>,</span>
-<span id="cb7-73"><a href="#cb7-73"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb7-74"><a href="#cb7-74"></a>    <span class="at">full.names =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb7-75"><a href="#cb7-75"></a>    <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-76"><a href="#cb7-76"></a>    <span class="at">ignore.case =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb7-77"><a href="#cb7-77"></a>    <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
-<span id="cb7-78"><a href="#cb7-78"></a>  )</span>
-<span id="cb7-79"><a href="#cb7-79"></a></span>
-<span id="cb7-80"><a href="#cb7-80"></a><span class="co"># zip the file up</span></span>
-<span id="cb7-81"><a href="#cb7-81"></a>zip<span class="sc">::</span><span class="fu">zip</span>(</span>
-<span id="cb7-82"><a href="#cb7-82"></a>  kmz_file_name,</span>
-<span id="cb7-83"><a href="#cb7-83"></a>  files_lst,</span>
-<span id="cb7-84"><a href="#cb7-84"></a>  <span class="at">recurse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-85"><a href="#cb7-85"></a>  <span class="at">compression_level =</span> <span class="dv">9</span>,</span>
-<span id="cb7-86"><a href="#cb7-86"></a>  <span class="at">include_directories =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-87"><a href="#cb7-87"></a>  <span class="at">root =</span> myWd,</span>
-<span id="cb7-88"><a href="#cb7-88"></a>  <span class="at">mode =</span> <span class="st">"mirror"</span></span>
-<span id="cb7-89"><a href="#cb7-89"></a>)</span>
-<span id="cb7-90"><a href="#cb7-90"></a></span>
-<span id="cb7-91"><a href="#cb7-91"></a><span class="co"># remove the temp folder and its contents</span></span>
-<span id="cb7-92"><a href="#cb7-92"></a><span class="fu">unlink</span>(temp_folder, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">library</span>(zip)</span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co"># Check if 'directory' is set and valid, throw an error if not</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"directory"</span>) <span class="sc">||</span> <span class="sc">!</span><span class="fu">dir.exists</span>(<span class="fu">paste0</span>(directory))) {</span>
+<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">stop</span>(<span class="st">"'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>  )</span>
+<span id="cb8-7"><a href="#cb8-7"></a>}</span>
+<span id="cb8-8"><a href="#cb8-8"></a></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co"># if it doesn't exist then add the default metres between images</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"metresBetweenEachImageWanted"</span>)) {</span>
+<span id="cb8-11"><a href="#cb8-11"></a>  <span class="fu">print</span>(<span class="st">"'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>  )</span>
+<span id="cb8-13"><a href="#cb8-13"></a>  metresBetweenEachImageWanted <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>}</span>
+<span id="cb8-15"><a href="#cb8-15"></a></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="cf">if</span> (addOverlays <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb8-17"><a href="#cb8-17"></a></span>
+<span id="cb8-18"><a href="#cb8-18"></a>new_directory <span class="ot">&lt;-</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb8-20"><a href="#cb8-20"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb8-22"><a href="#cb8-22"></a>         <span class="st">"m_apart/with_overlay"</span>)</span>
+<span id="cb8-23"><a href="#cb8-23"></a></span>
+<span id="cb8-24"><a href="#cb8-24"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a>  <span class="fu">normalizePath</span>(<span class="fu">paste0</span>(directory,</span>
+<span id="cb8-26"><a href="#cb8-26"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb8-27"><a href="#cb8-27"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb8-28"><a href="#cb8-28"></a>         <span class="st">"m_apart_with_overlay.kml"</span>), <span class="at">winslash =</span> <span class="st">"/"</span>, <span class="at">mustWork =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-29"><a href="#cb8-29"></a>} <span class="cf">else</span> <span class="cf">if</span>(addOverlays <span class="sc">==</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb8-30"><a href="#cb8-30"></a>  new_directory <span class="ot">&lt;-</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a>  <span class="fu">paste0</span>(directory,</span>
+<span id="cb8-32"><a href="#cb8-32"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb8-33"><a href="#cb8-33"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb8-34"><a href="#cb8-34"></a>         <span class="st">"m_apart"</span>)</span>
+<span id="cb8-35"><a href="#cb8-35"></a></span>
+<span id="cb8-36"><a href="#cb8-36"></a>output_kml <span class="ot">&lt;-</span></span>
+<span id="cb8-37"><a href="#cb8-37"></a>  <span class="fu">normalizePath</span>(<span class="fu">paste0</span>(directory,</span>
+<span id="cb8-38"><a href="#cb8-38"></a>         <span class="st">"_Frames_"</span>,</span>
+<span id="cb8-39"><a href="#cb8-39"></a>         metresBetweenEachImageWanted,</span>
+<span id="cb8-40"><a href="#cb8-40"></a>         <span class="st">"m_apart.kml"</span>), <span class="at">winslash =</span> <span class="st">"/"</span>, <span class="at">mustWork =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-41"><a href="#cb8-41"></a>}</span>
+<span id="cb8-42"><a href="#cb8-42"></a></span>
+<span id="cb8-43"><a href="#cb8-43"></a><span class="fu">print</span>(<span class="st">"Generating kmz file for:"</span>)</span>
+<span id="cb8-44"><a href="#cb8-44"></a><span class="fu">print</span>(output_kml)</span>
+<span id="cb8-45"><a href="#cb8-45"></a></span>
+<span id="cb8-46"><a href="#cb8-46"></a>kml_file_name <span class="ot">&lt;-</span> <span class="fu">basename</span>(output_kml)</span>
+<span id="cb8-47"><a href="#cb8-47"></a>kml_image_directory <span class="ot">&lt;-</span> new_directory</span>
+<span id="cb8-48"><a href="#cb8-48"></a></span>
+<span id="cb8-49"><a href="#cb8-49"></a>dir_to_copy <span class="ot">&lt;-</span> <span class="fu">normalizePath</span>(kml_image_directory, <span class="at">winslash =</span> <span class="st">"/"</span>, <span class="at">mustWork =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-50"><a href="#cb8-50"></a>temp_folder <span class="ot">&lt;-</span> <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory), <span class="st">"/temp"</span>)</span>
+<span id="cb8-51"><a href="#cb8-51"></a>new_dir_path <span class="ot">&lt;-</span> <span class="fu">paste0</span>(temp_folder, <span class="st">"/files/"</span>)</span>
+<span id="cb8-52"><a href="#cb8-52"></a></span>
+<span id="cb8-53"><a href="#cb8-53"></a>fs<span class="sc">::</span><span class="fu">dir_copy</span>(dir_to_copy, new_dir_path, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-54"><a href="#cb8-54"></a>fs<span class="sc">::</span><span class="fu">file_copy</span>(output_kml, temp_folder, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-55"><a href="#cb8-55"></a><span class="fu">file.rename</span>(</span>
+<span id="cb8-56"><a href="#cb8-56"></a>  <span class="at">from =</span> <span class="fu">file.path</span>(temp_folder, kml_file_name),</span>
+<span id="cb8-57"><a href="#cb8-57"></a>  <span class="at">to =</span> <span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)</span>
+<span id="cb8-58"><a href="#cb8-58"></a>)</span>
+<span id="cb8-59"><a href="#cb8-59"></a></span>
+<span id="cb8-60"><a href="#cb8-60"></a><span class="co">#clean up all of the extra line breaks in the kml file</span></span>
+<span id="cb8-61"><a href="#cb8-61"></a>mystring <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_file</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>))</span>
+<span id="cb8-62"><a href="#cb8-62"></a>mystring2 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring, <span class="at">fixed =</span> T)</span>
+<span id="cb8-63"><a href="#cb8-63"></a>mystring3 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring2, <span class="at">fixed =</span> T)</span>
+<span id="cb8-64"><a href="#cb8-64"></a>mystring4 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring3, <span class="at">fixed =</span> T)</span>
+<span id="cb8-65"><a href="#cb8-65"></a>mystring5 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\r\r\n</span><span class="st">'</span>, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>, mystring4, <span class="at">fixed =</span> T)</span>
+<span id="cb8-66"><a href="#cb8-66"></a>mystring6 <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">'</span><span class="sc">\n\r\n</span><span class="st">'</span>, <span class="st">' '</span>, mystring5, <span class="at">fixed =</span> T)</span>
+<span id="cb8-67"><a href="#cb8-67"></a></span>
+<span id="cb8-68"><a href="#cb8-68"></a><span class="co"># Extract the part of the string after the last '/'</span></span>
+<span id="cb8-69"><a href="#cb8-69"></a></span>
+<span id="cb8-70"><a href="#cb8-70"></a><span class="cf">if</span> (addOverlays <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb8-71"><a href="#cb8-71"></a>last_part_dir <span class="ot">&lt;-</span> <span class="fu">tail</span>(<span class="fu">strsplit</span>(dir_to_copy, <span class="st">"/"</span>)[[<span class="dv">1</span>]], <span class="dv">2</span>)</span>
+<span id="cb8-72"><a href="#cb8-72"></a>mykml <span class="ot">&lt;-</span></span>
+<span id="cb8-73"><a href="#cb8-73"></a>  stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mystring6[<span class="dv">1</span>], <span class="fu">paste0</span>(<span class="st">"src='./"</span>, last_part_dir[<span class="dv">1</span>],<span class="st">"/"</span>, last_part_dir[<span class="dv">2</span>]), <span class="st">"src='files"</span>)</span>
+<span id="cb8-74"><a href="#cb8-74"></a>}  <span class="cf">else</span> <span class="cf">if</span>(addOverlays <span class="sc">==</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb8-75"><a href="#cb8-75"></a>  last_part_dir <span class="ot">&lt;-</span> <span class="fu">tail</span>(<span class="fu">strsplit</span>(dir_to_copy, <span class="st">"/"</span>)[[<span class="dv">1</span>]], <span class="dv">2</span>)</span>
+<span id="cb8-76"><a href="#cb8-76"></a>mykml <span class="ot">&lt;-</span></span>
+<span id="cb8-77"><a href="#cb8-77"></a>  stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mystring6[<span class="dv">1</span>], <span class="fu">paste0</span>(<span class="st">"src='./"</span>, last_part_dir[<span class="dv">2</span>]), <span class="st">"src='files"</span>)</span>
+<span id="cb8-78"><a href="#cb8-78"></a>}</span>
+<span id="cb8-79"><a href="#cb8-79"></a></span>
+<span id="cb8-80"><a href="#cb8-80"></a>mykml <span class="ot">&lt;-</span> stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(mykml[<span class="dv">1</span>], <span class="st">"&lt;name&gt;./"</span>, <span class="st">"&lt;name&gt;"</span>)</span>
+<span id="cb8-81"><a href="#cb8-81"></a><span class="fu">sink</span>(<span class="fu">paste0</span>(<span class="fu">file.path</span>(temp_folder, <span class="st">"doc.kml"</span>)))</span>
+<span id="cb8-82"><a href="#cb8-82"></a><span class="fu">writeLines</span>(mykml)</span>
+<span id="cb8-83"><a href="#cb8-83"></a><span class="fu">sink</span>()</span>
+<span id="cb8-84"><a href="#cb8-84"></a></span>
+<span id="cb8-85"><a href="#cb8-85"></a><span class="co"># name for new kmz file</span></span>
+<span id="cb8-86"><a href="#cb8-86"></a>kmz_file_name <span class="ot">&lt;-</span></span>
+<span id="cb8-87"><a href="#cb8-87"></a>  <span class="fu">paste0</span>(usefun<span class="sc">::</span><span class="fu">get_parent_dir</span>(directory),<span class="st">"/"</span>,</span>
+<span id="cb8-88"><a href="#cb8-88"></a>         <span class="fu">basename</span>(tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(output_kml)),</span>
+<span id="cb8-89"><a href="#cb8-89"></a>         <span class="st">".kmz"</span>)</span>
+<span id="cb8-90"><a href="#cb8-90"></a></span>
+<span id="cb8-91"><a href="#cb8-91"></a><span class="co"># create the kmz file</span></span>
+<span id="cb8-92"><a href="#cb8-92"></a>myWd <span class="ot">&lt;-</span> temp_folder</span>
+<span id="cb8-93"><a href="#cb8-93"></a>files_lst <span class="ot">&lt;-</span></span>
+<span id="cb8-94"><a href="#cb8-94"></a>  <span class="fu">list.files</span>(</span>
+<span id="cb8-95"><a href="#cb8-95"></a>    <span class="at">path =</span> temp_folder,</span>
+<span id="cb8-96"><a href="#cb8-96"></a>    <span class="at">pattern =</span> <span class="st">"*.jpg|*.kml"</span>,</span>
+<span id="cb8-97"><a href="#cb8-97"></a>    <span class="at">all.files =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-98"><a href="#cb8-98"></a>    <span class="at">full.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-99"><a href="#cb8-99"></a>    <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-100"><a href="#cb8-100"></a>    <span class="at">ignore.case =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-101"><a href="#cb8-101"></a>    <span class="at">include.dirs =</span> <span class="cn">FALSE</span></span>
+<span id="cb8-102"><a href="#cb8-102"></a>  )</span>
+<span id="cb8-103"><a href="#cb8-103"></a></span>
+<span id="cb8-104"><a href="#cb8-104"></a><span class="co"># zip the file up</span></span>
+<span id="cb8-105"><a href="#cb8-105"></a>zip<span class="sc">::</span><span class="fu">zip</span>(</span>
+<span id="cb8-106"><a href="#cb8-106"></a>  kmz_file_name,</span>
+<span id="cb8-107"><a href="#cb8-107"></a>  files_lst,</span>
+<span id="cb8-108"><a href="#cb8-108"></a>  <span class="at">recurse =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-109"><a href="#cb8-109"></a>  <span class="at">compression_level =</span> <span class="dv">9</span>,</span>
+<span id="cb8-110"><a href="#cb8-110"></a>  <span class="at">include_directories =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-111"><a href="#cb8-111"></a>  <span class="at">root =</span> myWd,</span>
+<span id="cb8-112"><a href="#cb8-112"></a>  <span class="at">mode =</span> <span class="st">"mirror"</span></span>
+<span id="cb8-113"><a href="#cb8-113"></a>)</span>
+<span id="cb8-114"><a href="#cb8-114"></a></span>
+<span id="cb8-115"><a href="#cb8-115"></a><span class="co"># remove the temp folder and its contents</span></span>
+<span id="cb8-116"><a href="#cb8-116"></a><span class="fu">unlink</span>(temp_folder, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
