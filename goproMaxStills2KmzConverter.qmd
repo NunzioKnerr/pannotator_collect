@@ -33,38 +33,49 @@ format:
     code-line-numbers: TRUE
 ---
 
+## TL;DR:
+
+This workflow creates a .kmz file from geocoded 360° images taken with a GoPro Max. It involves package setup, file renaming, selecting images by distance (20m default), adding overlays (optional), creating a .kml file, then finally converting everything to a .kmz file for use in the [pannotator](https://cran.r-project.org/web/packages/pannotator/index.html) package for annotating.
+
 ## Description of the Workflow
 
-This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images.
-
-These can be taken with a gopro Max camera or most consumer drones like those made by DJI.
+This workflow has been developed to allow easy creation of .kmz files from 360 panospheric images. These can be taken with a gopro Max camera or most consumer drones like those made by DJI. The overlay may need to be adjusted depending on the size of the images generated etc.
 
 Any geocoded equirectangular images (jpegs) can be used, regardless of how they were created, but this workflow is specifically tailored to the gopro Max.
 
 Before using this script we recommend making a backup of the original camera files just in case as this script edits the files directly.
 
-The workflow is as follows:
+The workflow code below is as follows:
 
-1.  Rename the files
+1.  Check and install required packages
 
-2.  Get subset of images a specified distance apart
+2.  Set user options:
 
-3.  Add overlays to the images
+    \> folder containing 360 jpegs\
+    \> distance between images\
+    \> add overlays (True/False)\
+    \> overlay file to use (png with transparency)
 
-4.  Create a google earth .kml file
+3.  Rename the files (only renames files if names are 12 characters long)
 
-5.  Convert the kml file and associated images into a single .kmz file
+4.  Get subset of images a specified distance apart (defaults to 20m)
 
-The resulting .kmz file can then be used in the pannotator package for annotating.
+5.  Add overlays to the images (optional)
 
-## Check & Install Dependent Packages
+6.  Create a google earth .kml file
+
+7.  Convert the kml file and associated images into a single .kmz file
+
+The resulting .kmz file can then be used in the [pannotator](https://cran.r-project.org/web/packages/pannotator/index.html) package for annotating.
+
+## Check & Install Required Packages
 
 In order for this workflow to function as expected there are a few dependent packages to install and configure.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 dependentPackages <-
-  c("tcltk",
+  c("rstudioapi",
     "stringr",
     "tools",
     "exiftoolr",
@@ -97,13 +108,44 @@ for (i in dependentPackages) {
 
 ```
 
+## Set User Options
+
+Here we set the user options which will be used in the following code chunks
+
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
+
+# Choose the directory path containing 360 images.
+directory <- rstudioapi::selectDirectory(caption = "Select Directory Containing 360 images", label = "Select", path = rstudioapi::getActiveProject())
+# OR
+# add path manually
+# directory <- "C:/FolderContaining360Images/"
+
+# Select the minimum distance in metres between each extracted image.
+# For example, set metresBetweenEachImageWanted <- 1 to extract images a minimum of 1 metre apart.
+
+metresBetweenEachImageWanted <- 100
+
+# Set to TRUE to add overlays to each image file; or FALSE to use images without any overlays.
+addOverlays <- TRUE
+
+# Conditionally set the overlay image file if addOverlays is TRUE
+if (addOverlays) {
+  # Choose the file for your desired overlay image (PNG image with transparency).
+  overlayImageFile <- rstudioapi::selectFile(caption = "Select overlay file (png)", label = "Select PNG file", path = rstudioapi::getActiveProject(), filter = "png (*.png)",)
+  # OR
+  # specify file path manually.
+  # overlayImageFile <- "overlay_files/5m_overlay_wedges_straight6.png"
+}
+
+```
+
 ## Rename Files
 
 By default most consumer cameras like the gopro max & DJI drones don't allow the user to specify the file names they apply to images that they create.
 
 A typical file name follows the format GS\_\_XXXX.JPG - where XXXX is a counter number of the images taken by the camera.
 
-To address this issue and make it easier to manage the files for processing, this code appends the date_time stamp to the beginning of the files in a given directory. It's useful for organising files when doing field work, especially when using multiple cameras at the same time.
+To address this issue and make it easier to manage the files for processing, this code pre-pends the date_time stamp to the beginning of the files in a given directory. It's useful for organising files when doing field work, especially when using multiple cameras at the same time.
 
 The output format is: YYYYMMDD_HHMMSS_FileName.ext
 
@@ -113,17 +155,16 @@ This code checks the file name length initially assuming that files names direct
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-library(tcltk)
 library(exiftoolr)
 library(stringr)
 library(tools)
 
-#This code uses tcltk to throw up a folder browser window for the user to select the directory with the gopro max files to be renamed
-directory <-
-  tcltk::tk_choose.dir(default = "gopro_images", caption = "Select directory with files to process")
-#OR
-#directory <- "C:/FolderToUse/"
-#file_extension <- "\\.JPG$"
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("directory") || !dir.exists(paste0(directory))) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images.")
+}
+
+# filter only .jpg or .JPG files
 file_extension <- "\\.[Jj][Pp][Gg]$"
 
 my_files <-
@@ -135,8 +176,7 @@ my_files <-
   )
 
 #read the exif information in the file to get the creation date
-files_df <-
-  exiftoolr::exif_read(my_files, args = c("-G1", "-a", "-s"))
+files_df <- exiftoolr::exif_read(my_files, args = c("-G1", "-a", "-s"))
 
 #Loop through the files and check to change files names
 #this checks if the files have already been changed by looking at the length of the file name.
@@ -169,7 +209,7 @@ for (i in 1:nrow(files_df)) {
 
 ## Function to calculate distances between image geo-locations.
 
-This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling.
+This code looks through all the files in a given folder and copies images a user-specified distance apart into a new folder for use later on. It starts with the first file and looks for a file at least XX metres from that. Once it finds one it adds it to the list then uses it as the location to look for another file at least XX metres from it and so on until it gets to the end of the file list. This method is most suitable for linear transect sampling but should work with any images that are spaced out enough..
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
@@ -181,9 +221,9 @@ options(scipen = 9999)
 
 #function which takes 2 arguments
 #1:gpx_locations - a dataframe containing 4 columns("SourceFile", "System:Directory", "Composite:GPSLongitude", "Composite:GPSLatitude")
-#2:distance in metres between each image to extract. (default=50m)
+#2:distance in metres between each image to extract. (default=20m)
 findImagesEveryXmetres <-
-  function(my_gpx_locs, metresToNextImage = 50) {
+  function(my_gpx_locs, metresToNextImage = 20) {
     gpx_locs <- my_gpx_locs
     
     keeps <- c("Composite:GPSLongitude", "Composite:GPSLatitude")
@@ -264,15 +304,14 @@ Now call the function above to calculate the distance between all the images and
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-library(tcltk)
 library(exiftoolr)
 
-if (!exists("directory")) {
-  directory <-
-    tcltk::tk_choose.dir(default = "", caption = "Select directory with files to process")
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("directory") || !dir.exists(paste0(directory))) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images.")
 }
 
-file_extension <- "\\.jpg$"
+file_extension <- "\\.[Jj][Pp][Gg]$"
 
 my_files <-
   list.files(
@@ -297,9 +336,13 @@ gpx_locs <-
 
 #View(gpx_locs)
 
-metresBetweenEachImageWanted <- 10
-
-findImagesEveryXmetres(my_gpx_locs = gpx_locs, metresToNextImage = metresBetweenEachImageWanted)
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("metresBetweenEachImageWanted")) {
+  print("'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted")
+  findImagesEveryXmetres(my_gpx_locs = gpx_locs)
+} else {
+  findImagesEveryXmetres(my_gpx_locs = gpx_locs, metresToNextImage = metresBetweenEachImageWanted)
+}
 
 ```
 
@@ -326,79 +369,95 @@ The code below uses [imagemagick](https://imagemagick.org/index.php) to load the
 library(magick)
 library(tools)
 
-if (!exists("directory")) {
-  directory <-
-    tcltk::tk_choose.dir(default = "", caption = "Select directory with files to process")
-  #OR
-  #directory <- "C:/folder_path_to_gopro_files/"
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("directory") || !dir.exists(paste0(directory))) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+  )
 }
 
 # if it doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
-  metresBetweenEachImageWanted <- 50
-}
-
-# if it doesn't exist then thorw up a dialog to select the overlay file to use
-if (!exists("overlay_file")) {
-  overlay_file <-  tcltk::tk_choose.files(default= "./overlay_files/5m_overlay_wedges_straight6.png", caption = "Select the overlay .png to use", multi=FALSE)
-}
-
-new_directory <-
-  paste0(directory,
-         "_Frames_",
-         metresBetweenEachImageWanted,
-         "m_apart")
-
-file_extension <- "\\.jpg$"
-
-files_lst <-
-  list.files(
-    new_directory,
-    pattern = paste0(file_extension),
-    all.files = FALSE,
-    full.names = TRUE,
-    recursive = FALSE,
-    include.dirs = FALSE
+  print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
+  metresBetweenEachImageWanted <- 20
+}
 
-# first create a new directory to add the overlay images to
-dir.create(paste0(new_directory, "/with_overlay/"))
+# if it doesn't exist then throw up a dialog to select the overlay
+if (!exists("addOverlays")) {
+  stop("'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays.")
+}
 
-for (t in 1:length(files_lst)) {
-  background_image <- magick::image_read(files_lst[t])
-  overlay <-
-    magick::image_read(overlay_file)
-  image_dir <- dirname(files_lst[t])
-  overlay_image_dir <- paste0(image_dir, "/with_overlay/")
-  new_filename <-
-    paste0(overlay_image_dir,
-           basename(tools::file_path_sans_ext(files_lst[t])),
-           "_with_overlay.jpg")
-  print(paste0("Adding Overlay to create: ", new_filename))
-  img <- c(background_image, overlay) %>%
-    magick::image_flatten(.) %>%
-    magick::image_write(., new_filename, format = "jpg")
+if (addOverlays == TRUE) {
+  overlay_file <- overlayImageFile
+  
+  new_directory <-  paste0(directory,
+                           "_Frames_",
+                           metresBetweenEachImageWanted,
+                           "m_apart")
+  
+  if (!dir.exists(paste0(new_directory))) {
+    print(paste0(new_directory, " does not exist!"))
+  stop("Did you run the code chunk above to find images a certain distance apart?"
+  )
+}
+  # first create a new directory to add the overlay images to
+  dir.create(paste0(new_directory, "/with_overlay/"))
+  
+  file_extension <- "\\.[Jj][Pp][Gg]$"
+  
+  files_lst <-
+    list.files(
+      new_directory,
+      pattern = paste0(file_extension),
+      all.files = FALSE,
+      full.names = TRUE,
+      recursive = FALSE,
+      include.dirs = FALSE
+    )
+  
+  
+  for (t in 1:length(files_lst)) {
+    background_image <- magick::image_read(files_lst[t])
+    overlay <-
+      magick::image_read(overlay_file)
+    image_dir <- dirname(files_lst[t])
+    overlay_image_dir <- paste0(image_dir, "/with_overlay/")
+    new_filename <-
+      paste0(overlay_image_dir,
+             basename(tools::file_path_sans_ext(files_lst[t])),
+             "_with_overlay.jpg")
+    print(paste0("Adding overlay to create: ", new_filename))
+    img <- c(background_image, overlay) %>%
+      magick::image_flatten(.) %>%
+      magick::image_write(., new_filename, format = "jpg")
+  }
+  
+} else {
+  print("'addOverlays' not TRUE: No overlay files generated")
 }
 
 ```
 
-## Generate KML
+## Generate kml File
 
 This code generates a [google earth](https://earth.google.com) kml file linking to the image files in the folder generated above. It uses [ExifTool](https://exiftool.org/) with a template "kml_hide_rollover.fmt" to create the kml file.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-if (!exists("directory")) {
-  directory <-
-    tcltk::tk_choose.dir(default = "", caption = "Select directory with files to process")
-  #OR
-  #directory <- "C:/folder_path_to_gopro_files/"
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("directory") || !dir.exists(paste0(directory))) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+  )
 }
 
 # if it doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
-  metresBetweenEachImageWanted <- 50
+  print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
+  )
+  metresBetweenEachImageWanted <- 20
 }
+
+if (addOverlays == TRUE) {
 
 new_directory <-
   paste0(directory,
@@ -411,6 +470,19 @@ output_kml <-
          "_Frames_",
          metresBetweenEachImageWanted,
          "m_apart_with_overlay.kml")
+} else if(addOverlays == FALSE) {
+  new_directory <-
+  paste0(directory,
+         "_Frames_",
+         metresBetweenEachImageWanted,
+         "m_apart")
+
+output_kml <-
+  paste0(directory,
+         "_Frames_",
+         metresBetweenEachImageWanted,
+         "m_apart.kml")
+}
 
 exif_args <- c("-p", "kml_hide_rollover.fmt", "-r")
 exif_call(
@@ -425,30 +497,39 @@ mystring <- readr::read_file(output_kml)
 path_only <- paste0(dirname(output_kml))
 mystring2 <- gsub(path_only, ".", mystring, fixed = T)
 
+# Write the file out
 sink(paste0(output_kml))
   writeLines(mystring2)
 sink()
 
+print(paste0("generated kml file: ", output_kml))
+
 ```
 
-## Convert kml & images into a kmz
+## Convert .kml & Images into a .kmz File
 
 This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.
+
+NOTE: This code can generate kmz files \>2GB. these files won't open correctly in google earth but are not corrupt and will work fine in pannotator. This is a limitation of google earth being 32 bit. You can read about it [here](https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth).
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 library(zip)
 
-if (!exists("directory")) {
-  directory <-
-    tcltk::tk_choose.dir(default = "", caption = "Select directory with files to process")
-  #OR
-  #directory <- "C:/folder_path_to_gopro_files/"
+# Check if 'directory' is set and valid, throw an error if not
+if (!exists("directory") || !dir.exists(paste0(directory))) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+  )
 }
 
+# if it doesn't exist then add the default metres between images
 if (!exists("metresBetweenEachImageWanted")) {
-  metresBetweenEachImageWanted <- 100
+  print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
+  )
+  metresBetweenEachImageWanted <- 20
 }
+
+if (addOverlays == TRUE) {
 
 new_directory <-
   paste0(directory,
@@ -457,10 +538,23 @@ new_directory <-
          "m_apart/with_overlay")
 
 output_kml <-
+  normalizePath(paste0(directory,
+         "_Frames_",
+         metresBetweenEachImageWanted,
+         "m_apart_with_overlay.kml"), winslash = "/", mustWork = FALSE)
+} else if(addOverlays == FALSE) {
+  new_directory <-
   paste0(directory,
          "_Frames_",
          metresBetweenEachImageWanted,
-         "m_apart_with_overlay.kml")
+         "m_apart")
+
+output_kml <-
+  normalizePath(paste0(directory,
+         "_Frames_",
+         metresBetweenEachImageWanted,
+         "m_apart.kml"), winslash = "/", mustWork = FALSE)
+}
 
 print("Generating kmz file for:")
 print(output_kml)
@@ -468,9 +562,10 @@ print(output_kml)
 kml_file_name <- basename(output_kml)
 kml_image_directory <- new_directory
 
-dir_to_copy <- kml_image_directory
+dir_to_copy <- normalizePath(kml_image_directory, winslash = "/", mustWork = FALSE)
 temp_folder <- paste0(usefun::get_parent_dir(directory), "/temp")
 new_dir_path <- paste0(temp_folder, "/files/")
+
 fs::dir_copy(dir_to_copy, new_dir_path, overwrite = TRUE)
 fs::file_copy(output_kml, temp_folder, overwrite = TRUE)
 file.rename(
@@ -487,9 +582,16 @@ mystring5 <- gsub('\r\r\n', '\n', mystring4, fixed = T)
 mystring6 <- gsub('\n\r\n', ' ', mystring5, fixed = T)
 
 # Extract the part of the string after the last '/'
-last_part_dir <- tail(strsplit(new_directory, "/")[[1]], 2)
+
+if (addOverlays == TRUE) {
+last_part_dir <- tail(strsplit(dir_to_copy, "/")[[1]], 2)
 mykml <-
   stringr::str_replace_all(mystring6[1], paste0("src='./", last_part_dir[1],"/", last_part_dir[2]), "src='files")
+}  else if(addOverlays == FALSE) {
+  last_part_dir <- tail(strsplit(dir_to_copy, "/")[[1]], 2)
+mykml <-
+  stringr::str_replace_all(mystring6[1], paste0("src='./", last_part_dir[2]), "src='files")
+}
 
 mykml <- stringr::str_replace_all(mykml[1], "<name>./", "<name>")
 sink(paste0(file.path(temp_folder, "doc.kml")))
@@ -498,8 +600,7 @@ sink()
 
 # name for new kmz file
 kmz_file_name <-
-  paste0(usefun::get_parent_dir(directory),
-         "/",
+  paste0(usefun::get_parent_dir(directory),"/",
          basename(tools::file_path_sans_ext(output_kml)),
          ".kmz")
 
@@ -520,7 +621,7 @@ files_lst <-
 zip::zip(
   kmz_file_name,
   files_lst,
-  recurse = TRUE,
+  recurse = FALSE,
   compression_level = 9,
   include_directories = TRUE,
   root = myWd,
