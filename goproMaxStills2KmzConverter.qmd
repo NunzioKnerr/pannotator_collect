@@ -70,7 +70,7 @@ The resulting .kmz file can then be used in the [pannotator](https://cran.r-proj
 
 ## Check & Install Required Packages
 
-In order for this workflow to function as expected there are a few dependent packages to install and configure.
+In order for this workflow to function as expected there are a few dependent packages to install and configure. If you are on linux you may have some issues with the 'magick' package, check the documentation [here](https://cran.r-project.org/web/packages/magick/vignettes/intro.html).
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
@@ -361,7 +361,16 @@ The overlay was created using inkscape and then exported as a portable network g
 
 ![overlay image with transparency](overlay_files/5m_overlay_wedges_straight6.png)
 
-The code below uses [imagemagick](https://imagemagick.org/index.php) to load the underlying base file and then overlays the .png and saves out the flattened file for use in the kml/kmz files in the following steps.
+The code below uses [imagemagick](https://imagemagick.org/index.php) to load the underlying base file and then overlays the .png and saves out the flattened file for use in the kml/kmz files in the following steps. If you are on linux and have issues with the 'magick' package you may need to up the memory settings in the /etc/ImageMagick-6/policy.xml file.
+
+```         
+<policy domain="resource" name="memory" value="4GiB"/> 
+<policy domain="resource" name="map" value="8GiB"/> 
+<policy domain="resource" name="disk" value="16GiB"/> 
+<policy domain="resource" name="area" value="10GiB"/> 
+```
+
+You can find more info on how to do this [here](https://askubuntu.com/questions/1308369/how-to-edit-files-in-gui-text-editors-as-root).
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
