@@ -70,12 +70,26 @@ The resulting .kmz file can then be used in the [pannotator](https://cran.r-proj
 
 ## Check & Install Required Packages
 
-In order for this workflow to function as expected there are a few dependent packages to install and configure. If you are on linux you may have some issues with the 'magick' package, check the documentation [here](https://cran.r-project.org/web/packages/magick/vignettes/intro.html).
+In order for this workflow to function as expected there are a few dependent packages to install and configure. If you are on linux or mac you may have some issues with the 'magick' package, check the documentation [here](https://cran.r-project.org/web/packages/magick/vignettes/intro.html).
+
+On Linux you need to install the ImageMagick++ library: on Debian/Ubuntu this is called [libmagick++-dev](https://packages.debian.org/testing/libmagick++-dev):
+
+```         
+sudo apt-get install libmagick++-dev
+```
+
+To install from source on macOS you need either `imagemagick@6` or `imagemagick` from homebrew.
+
+```         
+brew install imagemagick@6
+```
+
+In RStudio use the little green arrow at the top-right corner of the chunk to run them.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
 dependentPackages <-
-  c("rstudioapi",
+  c("svDialogs",
     "stringr",
     "tools",
     "exiftoolr",
@@ -85,7 +99,6 @@ dependentPackages <-
     "magick",
     "fs",
     "magrittr",
-    "plotKML",
     "zip",
     "usefun"
   )
@@ -114,8 +127,10 @@ Here we set the user options which will be used in the following code chunks
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
+svDialogs::msgBox("This is a message to test")
+
 # Choose the directory path containing 360 images.
-directory <- rstudioapi::selectDirectory(caption = "Select Directory Containing 360 images", label = "Select", path = rstudioapi::getActiveProject())
+directory <- svDialogs::dlg_dir(default = getwd(), title = "Select Directory Containing 360 images", gui = .GUI)$res
 # OR
 # add path manually: use forward slashed only.
 # directory <- "C:/FolderContaining360Images/"
@@ -123,19 +138,25 @@ directory <- rstudioapi::selectDirectory(caption = "Select Directory Containing 
 # Select the minimum distance in metres between each extracted image.
 # For example, set metresBetweenEachImageWanted <- 100 to extract images a minimum of 100 metre apart.
 
-metresBetweenEachImageWanted <- 100
+metresBetweenEachImageWanted <- svDialogs::dlg_input(message = "Enter a value for: metresBetweenEachImageWanted", default = "100", gui = .GUI)$res
+# OR
+#metresBetweenEachImageWanted <- 100
 
 # Set to TRUE to add overlays to each image file; or FALSE to use images without any overlays.
-addOverlays <- TRUE
+addOverlays <- svDialogs::dlgList(choices=c(TRUE,FALSE), preselect = TRUE, multiple = FALSE, title = "Add overlay to images?", gui = .GUI)$res
+# OR
+#addOverlays <- TRUE
 
 # Conditionally set the overlay image file if addOverlays is TRUE
-if (addOverlays) {
+if (addOverlays == TRUE) {
   # Choose the file for your desired overlay image (PNG image with transparency).
-  overlayImageFile <- rstudioapi::selectFile(caption = "Select overlay file (png)", label = "Select PNG file", path = rstudioapi::getActiveProject(), filter = "png (*.png)",)
+   overlayImageFile <- svDialogs::dlg_open(default = "./overlay_files",title = "Select overlay file (png)", multiple = FALSE, filters = svDialogs::dlg_filters["png", ], gui = .GUI)$res
   # OR
   # specify file path manually.
   # overlayImageFile <- "overlay_files/5m_overlay_wedges_straight6.png"
 }
+
+#svDialogs::dlg_message(message ="To have selected XXX", type = c("ok"),gui = .GUI)
 
 ```
 
@@ -374,8 +395,8 @@ You can find more info on how to do this [here](https://askubuntu.com/questions/
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-library(magick)
-library(tools)
+#library(magick)
+#library(tools)
 
 # Check if 'directory' is set and valid, throw an error if not
 if (!exists("directory") || !dir.exists(paste0(directory))) {
