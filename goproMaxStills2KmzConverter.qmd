@@ -35,7 +35,7 @@ format:
 
 ## TL;DR:
 
-This workflow creates a .kmz file from geocoded 360° images taken with a GoPro Max. It involves package setup, file renaming, selecting images by distance (20m default), adding overlays (optional), creating a .kml file, then finally converting everything to a .kmz file for use in the [pannotator](https://cran.r-project.org/web/packages/pannotator/index.html) package for annotating.
+This workflow creates a .kmz file from geocoded 360° images taken with a GoPro Max. It involves package setup, file renaming, selecting images by distance (20m default), adding overlays (optional), creating a .kml file, then finally converting everything to a .kmz file for use in the [pannotator](https://cran.r-project.org/web/packages/pannotator/index.html) package for annotating. To use this script open the pannotator_collect.Rproj in RStudio, then open this file (goproMaxStills2 KmzConverter.qmd) and run each code chunk in order to create a .kmz file.
 
 ## Description of the Workflow
 
@@ -84,7 +84,7 @@ To install from source on macOS you need either `imagemagick@6` or `imagemagick`
 brew install imagemagick@6
 ```
 
-In RStudio use the little green arrow at the top-right corner of the chunk to run them.
+In RStudio use the play arrow at the top-right corner of the chunks to run them.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
@@ -97,6 +97,7 @@ dependentPackages <-
     "stringr",
     "gpx",
     "magick",
+    "imager",
     "fs",
     "magrittr",
     "zip",
@@ -121,42 +122,65 @@ for (i in dependentPackages) {
 
 ```
 
-## Set User Options
+## Set User Options (manual version)
 
-Here we set the user options which will be used in the following code chunks
+Here we manually set the user options which will be used in the following code chunks
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-svDialogs::msgBox("This is a message to test")
-
-# Choose the directory path containing 360 images.
-directory <- svDialogs::dlg_dir(default = getwd(), title = "Select Directory Containing 360 images", gui = .GUI)$res
-# OR
-# add path manually: use forward slashed only.
+# Manually add the path: use forward slashed only. (Windows)
 # directory <- "C:/FolderContaining360Images/"
+# Manually add the path: use forward slashes only (works for macOS and Linux).
+ directory <- "C:/E/gitRepos/pannotator_collect/gopro_images"
 
 # Select the minimum distance in metres between each extracted image.
-# For example, set metresBetweenEachImageWanted <- 100 to extract images a minimum of 100 metre apart.
-
-metresBetweenEachImageWanted <- svDialogs::dlg_input(message = "Enter a value for: metresBetweenEachImageWanted", default = "100", gui = .GUI)$res
-# OR
-#metresBetweenEachImageWanted <- 100
+ metresBetweenEachImageWanted <- 100
 
 # Set to TRUE to add overlays to each image file; or FALSE to use images without any overlays.
-addOverlays <- svDialogs::dlgList(choices=c(TRUE,FALSE), preselect = TRUE, multiple = FALSE, title = "Add overlay to images?", gui = .GUI)$res
-# OR
-#addOverlays <- TRUE
+ addOverlays <- TRUE
 
 # Conditionally set the overlay image file if addOverlays is TRUE
 if (addOverlays == TRUE) {
-  # Choose the file for your desired overlay image (PNG image with transparency).
-   overlayImageFile <- svDialogs::dlg_open(default = "./overlay_files",title = "Select overlay file (png)", multiple = FALSE, filters = svDialogs::dlg_filters["png", ], gui = .GUI)$res
-  # OR
   # specify file path manually.
-  # overlayImageFile <- "overlay_files/5m_overlay_wedges_straight6.png"
+   overlayImageFile <- "./overlay_files/5m_overlay_wedges_straight6.png"
+} else if (identical(addOverlays, FALSE) || length(addOverlays) == 0) {
+  overlayImageFile <- NULL
 }
 
-#svDialogs::dlg_message(message ="To have selected XXX", type = c("ok"),gui = .GUI)
+```
+
+## Set User Options (svDialog GUI version)
+
+Here we set the user options using GUI popups which will be used in the following code chunks
+
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
+
+# svDialogs::msgBox("There will be several popup dialogs so you can select the different options")
+# 
+# # Choose the directory path containing 360 images.
+# directory <- svDialogs::dlg_dir(default = getwd(), title = "Select Directory Containing 360 images")$res
+# 
+# # Select the minimum distance in metres between each extracted image.
+# metresBetweenEachImageWanted <- svDialogs::dlg_input(message = "Enter a value for: metresBetweenEachImageWanted", default = "100")$res
+# 
+# # Set to TRUE to add overlays to each image file; or FALSE to use images without any overlays.
+# addOverlays <- svDialogs::dlgList(choices=c(TRUE,FALSE), preselect = TRUE, multiple = FALSE, title = "Add overlay to images?")$res
+# 
+# # Conditionally set the overlay image file if addOverlays is TRUE
+# if (addOverlays == TRUE) {
+#   # Choose the file for your desired overlay image (PNG image with transparency).
+#   overlayImageFile <- svDialogs::dlg_open(default = "./overlay_files", title = "Select overlay file (png)", multiple = FALSE, filters = svDialogs::dlg_filters["png", ])$res
+# } else if (identical(addOverlays, FALSE) || length(addOverlays) == 0) {
+#   overlayImageFile <- NULL
+#   }
+# 
+# finalMessage <- paste0("Folder with 360 Images: ", directory,
+#    " Metres Between Each Image Wanted: ", metresBetweenEachImageWanted, " AddOverlays: ", addOverlays)
+# if (addOverlays == TRUE) {
+#   finalMessage <- paste0(finalMessage, " Overlay Image File: " , overlayImageFile)
+# }
+# 
+# svDialogs::dlg_message(message =finalMessage, type = "ok")
 
 ```
 
@@ -181,8 +205,9 @@ library(stringr)
 library(tools)
 
 # Check if 'directory' is set and valid, throw an error if not
-if (!exists("directory") || !dir.exists(paste0(directory))) {
-  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images.")
+if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+  )
 }
 
 # filter only .jpg or .JPG files
@@ -294,7 +319,7 @@ findImagesEveryXmetres <-
     print(paste0("Files found:", selected_files))
     
     new_folder <-
-      paste0(gpx_locs[1, "System:Directory"], "_Frames_", metres_between_images, "m_apart")
+      paste0(gpx_locs[1, "System:Directory"], "_", metres_between_images, "m_apart")
     
     dir.create(new_folder)
     
@@ -317,6 +342,8 @@ findImagesEveryXmetres <-
     
   }
 
+print("findImagesEveryXmetres(my_gpx_locs, metresToNextImage) function is now available to call")
+
 ```
 
 ## Call Function Above
@@ -328,8 +355,9 @@ Now call the function above to calculate the distance between all the images and
 library(exiftoolr)
 
 # Check if 'directory' is set and valid, throw an error if not
-if (!exists("directory") || !dir.exists(paste0(directory))) {
-  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images.")
+if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
+  stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+  )
 }
 
 file_extension <- "\\.[Jj][Pp][Gg]$"
@@ -357,7 +385,7 @@ gpx_locs <-
 
 #View(gpx_locs)
 
-if (!exists("metresBetweenEachImageWanted")) {
+if (!exists("metresBetweenEachImageWanted") || length(metresBetweenEachImageWanted) == 0) {
   print("'metresBetweenEachImageWanted' does not exist. Using Default value. Please run the code chunk under 'Set User Options' above if you want to change the metresBetweenEachImageWanted")
   findImagesEveryXmetres(my_gpx_locs = gpx_locs)
 } else {
@@ -366,7 +394,7 @@ if (!exists("metresBetweenEachImageWanted")) {
 
 ```
 
-## Add Overlays to the Images
+## Add Overlays to the Images (magick)
 
 This code goes through the images in the folder created above and adds the overlay file to them. This overlay must be specific to the camera used to create the 360 degree images as the focal length of the lens etc. will define how the overlay should look.
 
@@ -395,24 +423,25 @@ You can find more info on how to do this [here](https://askubuntu.com/questions/
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
-#library(magick)
-#library(tools)
+library(magick)
+library(tools)
+library(magrittr)
 
 # Check if 'directory' is set and valid, throw an error if not
-if (!exists("directory") || !dir.exists(paste0(directory))) {
+if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
   stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
   )
 }
 
 # if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
-if (!exists("metresBetweenEachImageWanted")) {
+if (!exists("metresBetweenEachImageWanted") || length(metresBetweenEachImageWanted) == 0) {
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
   metresBetweenEachImageWanted <- 20
 }
 
 # if 'addOverlays' doesn't exist then throw an error asking to set 'addOverlays'
-if (!exists("addOverlays")) {
+if (!exists("addOverlays") || length(addOverlays) == 0) {
   stop("'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays.")
 }
 
@@ -420,7 +449,7 @@ if (addOverlays == TRUE) {
   overlay_file <- overlayImageFile
   
   new_directory <-  paste0(directory,
-                           "_Frames_",
+                           "_",
                            metresBetweenEachImageWanted,
                            "m_apart")
   
@@ -467,20 +496,166 @@ if (addOverlays == TRUE) {
 
 ```
 
+## Overlays to the Images (imager)
+
+This code is an alternative version in case you have problems loading the magick package
+
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
+
+# library(imager)
+# 
+# # Check if 'directory' is set and valid, throw an error if not
+# if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
+#   stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
+#   )
+# }
+# 
+# # if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
+# if (!exists("metresBetweenEachImageWanted") || length(metresBetweenEachImageWanted) == 0) {
+#   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
+#   )
+#   metresBetweenEachImageWanted <- 20
+# }
+# 
+# # if 'addOverlays' doesn't exist then throw an error asking to set 'addOverlays'
+# if (!exists("addOverlays") || length(addOverlays) == 0) {
+#   stop("'addOverlays' does not exist. Please run the code chunk under 'Set User Options' above to set the addOverlays.")
+# }
+# 
+# if (addOverlays == TRUE) {
+#   overlay_file <- overlayImageFile
+#   
+#   new_directory <-  paste0(directory,
+#                            "_",
+#                            metresBetweenEachImageWanted,
+#                            "m_apart")
+#   
+#   if (!dir.exists(paste0(new_directory))) {
+#     print(paste0(new_directory, " does not exist!"))
+#   stop("Did you run the code chunk above to find images a certain distance apart?"
+#   )
+# }
+#   # first create a new directory to add the overlay images to
+#   dir.create(paste0(new_directory, "/with_overlay/"))
+#   
+#   file_extension <- "\\.[Jj][Pp][Gg]$"
+#   
+#   files_lst <-
+#     list.files(
+#       new_directory,
+#       pattern = paste0(file_extension),
+#       all.files = FALSE,
+#       full.names = TRUE,
+#       recursive = FALSE,
+#       include.dirs = FALSE
+#     )
+#  
+#   for (t in 1:length(files_lst)) {
+# 
+#     base_image <- imager::load.image(files_lst[t])
+#     overlay <-  imager::load.image(overlay_file)
+#     
+#     # Resize overlay to match the dimensions of the base image (if needed)
+#     overlay_resized <- resize(overlay, dim(base_image)[1], dim(base_image)[2])
+#     
+#     # Add the overlay onto the base image
+#     # Ensure the overlay has an alpha channel for transparency
+#     if (dim(overlay_resized)[4] == 4) {
+#         # Extract RGB channels from the base image
+#         base_rgb <- base_image[,,,1:3]
+#   
+#         # Extract RGB and alpha channels from the overlay
+#         overlay_rgb <- overlay_resized[,,,1:3]
+#         alpha <- overlay_resized[,,,4]
+#   
+#         #print(dim(base_rgb))    # Dimensions of base image's RGB channels
+#         #print(dim(overlay_rgb)) # Dimensions of overlay's RGB channels
+#         #print(dim(alpha))       # Dimensions of overlay's alpha channel
+# 
+#         alpha <- abind::abind(alpha, alpha, alpha, along = 3)
+#   
+#         # Blend the overlay with the base image using the alpha channel
+#         blended_image <- (base_rgb * (1 - alpha)) + (overlay_rgb * alpha)
+#     }
+#     
+#     image_dir <- dirname(files_lst[t])
+#     overlay_image_dir <- paste0(image_dir, "/with_overlay/")
+#     new_filename <-
+#       paste0(overlay_image_dir,
+#              basename(tools::file_path_sans_ext(files_lst[t])),
+#              "_with_overlay.jpg")
+#     print(paste0("Adding overlay to create: ", new_filename))
+#     
+#     # Save the result
+#     imager::save.image(imager::as.cimg(blended_image), new_filename)
+#   }
+#   
+# } else {
+#   print("'addOverlays' not TRUE: No overlay files generated")
+# }
+
+```
+
+## Imager Single Image
+
+```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
+
+#library(imager)
+
+# # Load the base image (e.g., a 360-degree image)
+# base_image <- load.image("gopro_images_100m_apart/20220807_161152_GS020327.jpg")
+# 
+# #plot(base_image)
+# # Load the overlay image (e.g., a PNG with transparency)
+# overlay <- load.image("overlay_files/5m_overlay_wedges_straight6.png")
+# 
+# #plot(overlay)
+# # Resize overlay to match the dimensions of the base image (if needed)
+# overlay_resized <- resize(overlay, dim(base_image)[1], dim(base_image)[2])
+# 
+# # Add the overlay onto the base image
+# # Ensure the overlay has an alpha channel for transparency
+# if (dim(overlay_resized)[4] == 4) {
+#   # Extract RGB channels from the base image
+#   base_rgb <- base_image[,,,1:3]
+#   
+#   # Extract RGB and alpha channels from the overlay
+#   overlay_rgb <- overlay_resized[,,,1:3]
+#   alpha <- overlay_resized[,,,4]
+#   
+#   print(dim(base_rgb))    # Dimensions of base image's RGB channels
+#   print(dim(overlay_rgb)) # Dimensions of overlay's RGB channels
+#   print(dim(alpha))       # Dimensions of overlay's alpha channel
+# 
+#   alpha <- abind::abind(alpha, alpha, alpha, along = 3)
+#   
+#   # Blend the overlay with the base image using the alpha channel
+#   blended_image <- (base_rgb * (1 - alpha)) + (overlay_rgb * alpha)
+# }
+# 
+# # Save the result
+# save.image(as.cimg(blended_image), "test_output_image.jpg")
+
+# Display the image
+#plot(as.cimg(blended_image))
+```
+
 ## Generate kml File
 
 This code generates a [google earth](https://earth.google.com) kml file linking to the image files in the folder generated above. It uses [ExifTool](https://exiftool.org/) with a template "kml_hide_rollover.fmt" to create the kml file.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
+library(readr)
+
 # Check if 'directory' is set and valid, throw an error if not
-if (!exists("directory") || !dir.exists(paste0(directory))) {
+if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
   stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
   )
 }
 
 # if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
-if (!exists("metresBetweenEachImageWanted")) {
+if (!exists("metresBetweenEachImageWanted") || length(metresBetweenEachImageWanted) == 0) {
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
   metresBetweenEachImageWanted <- 20
@@ -490,31 +665,31 @@ if (addOverlays == TRUE) {
 
 new_directory <-
   paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart/with_overlay")
 
 output_kml <-
-  paste0(directory,
-         "_Frames_",
+   normalizePath(paste0(directory,
+         "_",
          metresBetweenEachImageWanted,
-         "m_apart_with_overlay.kml")
-} else if(addOverlays == FALSE) {
+         "m_apart_with_overlay.kml"), winslash = "/", mustWork = FALSE)
+} else if(addOverlays == FALSE || length(addOverlays) == 0) {
   new_directory <-
   paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart")
 
 output_kml <-
-  paste0(directory,
-         "_Frames_",
+  normalizePath(paste0(directory,
+         "_",
          metresBetweenEachImageWanted,
-         "m_apart.kml")
+         "m_apart.kml"), winslash = "/", mustWork = FALSE)
 }
 
 exif_args <- c("-p", "kml_hide_rollover.fmt", "-r")
-exif_call(
+exiftoolr::exif_call(
   args = exif_args,
   path = new_directory,
   stdout = output_kml,
@@ -543,16 +718,20 @@ NOTE: This code can generate kmz files \>2GB. These files won't open correctly i
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
+library(fs)
+library(usefun)
+library(readr)
+library(stringr)
 library(zip)
 
 # Check if 'directory' is set and valid, throw an error if not
-if (!exists("directory") || !dir.exists(paste0(directory))) {
+if (!exists("directory") || !dir.exists(paste0(directory)) || length(directory) == 0) {
   stop("'directory' does not exist. Please run the code chunk under 'Set User Options' above to set the directory containing the 360 images."
   )
 }
 
 # if 'metresBetweenEachImageWanted' doesn't exist then add the default metres between images
-if (!exists("metresBetweenEachImageWanted")) {
+if (!exists("metresBetweenEachImageWanted") || length(metresBetweenEachImageWanted) == 0){
   print("'metresBetweenEachImageWanted' not selected...using default: Please run the code chunk under 'Set User Options' above to set the metresBetweenEachImageWanted."
   )
   metresBetweenEachImageWanted <- 20
@@ -562,25 +741,25 @@ if (addOverlays == TRUE) {
 
 new_directory <-
   paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart/with_overlay")
 
 output_kml <-
   normalizePath(paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart_with_overlay.kml"), winslash = "/", mustWork = FALSE)
-} else if(addOverlays == FALSE) {
+} else if(addOverlays == FALSE || length(addOverlays) == 0) {
   new_directory <-
   paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart")
 
 output_kml <-
   normalizePath(paste0(directory,
-         "_Frames_",
+         "_",
          metresBetweenEachImageWanted,
          "m_apart.kml"), winslash = "/", mustWork = FALSE)
 }
@@ -592,7 +771,7 @@ kml_file_name <- basename(output_kml)
 kml_image_directory <- new_directory
 
 dir_to_copy <- normalizePath(kml_image_directory, winslash = "/", mustWork = FALSE)
-temp_folder <- paste0(usefun::get_parent_dir(directory), "/temp")
+temp_folder <- paste0(usefun::get_parent_dir(directory), "temp")
 new_dir_path <- paste0(temp_folder, "/files/")
 
 fs::dir_copy(dir_to_copy, new_dir_path, overwrite = TRUE)
@@ -634,7 +813,7 @@ kmz_file_name <-
          ".kmz")
 
 # create the kmz file
-myWd <- temp_folder
+myWd <- normalizePath(temp_folder, winslash = "/", mustWork = FALSE)
 files_lst <-
   list.files(
     path = temp_folder,
