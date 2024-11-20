@@ -552,7 +552,7 @@ print(paste0("generated kml file: ", output_kml))
 
 This code reads the .kml file created above and converts it to a .kmz file. This involves zipping up the images and the .kml file into one file. It also edits the relative links etc. The convenience of the kmz file is that it combines the kml and associated images into one file.
 
-NOTE: This code can generate kmz files \>2GB. These files won't open correctly in the web version of Google Earth or Google Earth Pro but are not corrupt and will work fine in pannotator. This is a limitation of google earth pro being 32 bit. You can read about it [here](https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth). Kmz files \<2GB in size can be viewed in Google Earth Pro.
+NOTE: This code can generate kmz files \>2GB. These files won't open correctly in the web version of Google Earth or Google Earth Pro but are not corrupt and will work fine in pannotator. This is a limitation of Google Earth Pro being 32 bit. You can read about it [here](https://stackoverflow.com/questions/41284861/what-is-the-max-file-size-to-open-a-kmz-in-google-earth). Kmz files \<2GB in size can be viewed in Google Earth Pro.
 
 ```{r eval=FALSE, echo=TRUE, warning=FALSE, include=TRUE}
 
