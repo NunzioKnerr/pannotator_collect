@@ -1,0 +1,43 @@
+---
+title: "install and run pannotator"
+author:
+  - name: "Nunzio Knerr"
+  - name: "Robert Godfree"
+date: 'today'
+editor: visual
+---
+
+# Installation
+
+## Minimum Requirements
+
+To use this package, please ensure your system meets the following minimum requirements:
+
+-   **R version**: 4.4.0 or higher
+
+-   **RStudio version**: 2024.04.2+764 or higher
+
+-   **Shiny version**: 1.9.1 or higher
+
+## CRAN Version
+
+The pannotator package is now available on CRAN, to install it use the code below.
+
+```{r echo=TRUE, eval=FALSE, warning=FALSE, include=TRUE}
+
+install.packages("pannotator")
+
+```
+
+## Running the Package
+
+To run the application use the following code.
+
+```{r echo=TRUE, eval=FALSE, warning=FALSE, include=TRUE}
+
+library(pannotator)
+
+options(shiny.port = httpuv::randomPort(), shiny.launch.browser = .rs.invokeShinyWindowExternal, shiny.maxRequestSize = 5000 * 1024^2)
+
+run_app()
+```
